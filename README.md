@@ -33,7 +33,7 @@ Building the installer (`Build installer.bat`) needs a free castLabs EVS account
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Your F1 login
-In the desktop app, sign in to F1 TV inside the F1 TV box. The app reads the `login-session` cookie from that box and uses it
+In the desktop app, the first time you open it (and whenever your login expires) an F1 TV box opens on F1's own sign-in page: sign in there. The app reads the `login-session` cookie from that box and uses it
 (and picks up the new one whenever F1 refreshes it). You can also click **F1 login** and paste it, put it in `f1-token.txt`, or run
 `F1_TOKEN=... node server.js`. To find it by hand: sign in at f1tv.formula1.com, open the developer tools, then Application,
 Cookies, `login-session`. It expires now and then; the app tells you and opens the login window.

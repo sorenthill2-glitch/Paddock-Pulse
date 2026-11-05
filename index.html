@@ -134,6 +134,10 @@ body.dragging{user-select:none}body.dragging webview{pointer-events:none}
 #wait{position:fixed;inset:var(--hh,48px) 0 0 0;background:transparent;pointer-events:none;display:flex;align-items:center;justify-content:center;padding:20px;z-index:99999}
 #wait .box{pointer-events:auto;box-shadow:0 12px 40px rgba(0,0,0,.45)}
 #wait.hide{display:none}
+#loginHint{position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--hh,48px) + 10px);z-index:99998;display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:min(760px,calc(100vw - 24px));padding:10px 14px;background:var(--panel);border:1px solid var(--bd2);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.45);font-size:13px}
+#loginHint.hide{display:none}
+#loginHint b{font:800 15px var(--head)}
+#loginHint span{color:var(--mute);flex:1 1 260px}
 #replayBar{display:none;align-items:center;gap:10px;padding:6px 14px;background:var(--phbg);border-bottom:1px solid var(--bd);font:500 12px var(--mono);flex-wrap:wrap}
 body.replay #replayBar{display:flex}
 #replayBar .tag{background:var(--soft);color:#fff;padding:1px 8px;font:700 13px var(--head);letter-spacing:.1em}
@@ -283,6 +287,7 @@ header button.on{background:#fff;color:#15172b;border-color:#fff}
   <div class="row2"><button id="lgCancel">Cancel</button><button id="lgSave" class="on">Save</button></div>
 </div></div>
 <div id="wait" class="hide"><div class="box"><h2 id="waitH">No live session</h2><div id="waitP"></div><a href="https://f1tv.formula1.com" target="_blank" rel="noopener">Open F1 TV</a><button id="waitX" title="Hide this message">Hide</button></div></div>
+<div id="loginHint" class="hide"><b id="lhT">Sign in to F1 TV</b><span id="lhP">Use the F1 TV box below. Paddock Pulse picks your login up by itself once you are signed in.</span><button id="lhPaste">Paste a login instead</button><button id="lhX" title="Hide this">Hide</button></div>
 
 <div id="ws">
   <div class="panel" data-id="timing" data-title="Timing"><div class="ph"><span>Timing</span><span class="acts"><button id="gapBtn">Interval</button></span></div><div class="pb"><div id="rows"></div></div><i class="rz"></i></div>
@@ -1446,11 +1451,27 @@ function rpWire(){
   let badShown=false;
   setInterval(async()=>{
     const c=await fetch('/config').then(r=>r.json()).catch(()=>null);if(!c)return;
-    if(CFG.f1feed&&!CFG.token&&c.token){CFG.token=true;$('#loginModal').classList.remove('show');reloadData()}
-    if(c.tokenBad&&!badShown){badShown=true;$('#loginBtn').click();$('#lgMsg').textContent='Your saved F1 login has expired. Sign in again in the F1 TV box (it is picked up automatically) or paste a fresh one.'}
+    if(CFG.f1feed&&!CFG.token&&c.token){CFG.token=true;$('#loginModal').classList.remove('show');$('#loginHint').classList.add('hide');reloadData()}
+    if(c.token&&!c.tokenBad&&!$('#loginHint').classList.contains('hide'))$('#loginHint').classList.add('hide');
+    if(c.tokenBad&&!badShown){badShown=true;if(!promptSignIn(true)){$('#loginBtn').click();$('#lgMsg').textContent='Your saved F1 login has expired. Paste a fresh one.'}}
     if(!c.tokenBad)badShown=false;
   },4000);
-  setTimeout(()=>{if(CFG.f1feed&&!CFG.token&&!sessionStorage.getItem('pp_login_asked')){try{sessionStorage.setItem('pp_login_asked','1')}catch{}$('#loginBtn').click()}},2500);
+  // first run (or an expired login): in the desktop app open F1's own sign-in page in an F1 TV box instead of asking for a pasted key
+  const F1SIGNIN='https://account.formula1.com/#/en/login?redirect=https%3A%2F%2Ff1tv.formula1.com%2F';
+  const hint=(t,p)=>{$('#lhT').textContent=t;$('#lhP').textContent=p;$('#loginHint').classList.remove('hide')};
+  const promptSignIn=(expired)=>{
+    if(!DESKTOP)return false;
+    if(!tvIds().length)addTv();
+    const wv=tvViews[tvIds()[0]];if(!wv)return false;
+    const go=()=>{try{wv.loadURL(F1SIGNIN)}catch{}};
+    if(wv._ready)go();else wv.addEventListener('dom-ready',go,{once:true});
+    hint(expired?'Your F1 login has expired':'Sign in to F1 TV','Sign in in the F1 TV box. Paddock Pulse picks the login up by itself, nothing to copy.');
+    return true;
+  };
+  $('#lhX').onclick=()=>$('#loginHint').classList.add('hide');
+  $('#lhPaste').onclick=()=>{$('#loginHint').classList.add('hide');$('#loginBtn').click()};
+  window.__promptSignIn=promptSignIn;
+  setTimeout(()=>{if(CFG.f1feed&&!CFG.token&&!sessionStorage.getItem('pp_login_asked')){try{sessionStorage.setItem('pp_login_asked','1')}catch{}if(!promptSignIn(false))$('#loginBtn').click()}},2500);
   const ts=$('#themeSel');let tv='dark';try{tv=localStorage.getItem('pp_theme')||'dark'}catch{}
   ts.value=tv;if(window.desktopTheme)window.desktopTheme(tv);
   ts.onchange=()=>{const v=ts.value;try{localStorage.setItem('pp_theme',v)}catch{}
