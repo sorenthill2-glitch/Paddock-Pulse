@@ -51,6 +51,11 @@ app.whenReady().then(async () => {
   const widevine = (electron.components && electron.components.whenReady)
     ? Promise.race([electron.components.whenReady().then(() => console.log('Widevine components:', JSON.stringify(electron.components.status()))), new Promise(r => setTimeout(r, 20000))]).catch(e => console.warn('Widevine component not ready:', e.message || e))
     : Promise.resolve();
+  // first launch: Widevine (F1 TV video support) may still have to download, so show a message instead of a blank window meanwhile
+  const splash = '<body style="margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#0b0d12;color:#f4f6fc;font-family:Segoe UI,Arial,sans-serif">'
+    + '<div style="font:italic 700 34px Segoe UI,Arial,sans-serif;letter-spacing:.02em">Paddock <span style="color:#ff5a4f">Pulse</span></div>'
+    + '<div style="color:#9aa3b2;font-size:14px">Getting ready. The first launch can take a little longer while video support is set up.</div></body>';
+  win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(splash));
   const [port] = await Promise.all([ready, widevine]);
   win.loadURL('http://127.0.0.1:' + port + '/');
   win.webContents.setWindowOpenHandler(({ url }) => { shell.openExternal(url); return { action: 'deny' }; });
