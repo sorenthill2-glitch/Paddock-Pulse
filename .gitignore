@@ -1,0 +1,17 @@
+# secrets: your own F1 login. Never commit these.
+f1-token.txt
+*token*.txt
+.env
+.env.*
+
+# generated / downloaded
+node_modules/
+dist/
+data/
+*.log
+
+# editors, OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

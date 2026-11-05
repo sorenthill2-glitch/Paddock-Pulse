@@ -1,0 +1,14 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # these need no login and no dependencies (no `npm install`: the Electron fork is only needed to run the app)
+      - run: node test-layout.js
+      - run: node test-f1tv.js
+      - run: node test-feedcore.js

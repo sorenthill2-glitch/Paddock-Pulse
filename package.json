@@ -1,0 +1,71 @@
+{
+  "name": "paddock-pulse",
+  "version": "1.0.0",
+  "description": "Live F1 dashboard and session replayer for the desktop, with F1 TV video and data kept in sync",
+  "main": "main.js",
+  "private": true,
+  "author": "Paddock Pulse",
+  "scripts": {
+    "start": "electron .",
+    "web": "node server.js",
+    "pack": "electron-builder --win dir",
+    "dist": "electron-builder --win nsis --prepackaged dist/win-unpacked",
+    "test": "node test-layout.js && node test-f1tv.js && node test-feedcore.js"
+  },
+  "build": {
+    "appId": "com.paddockpulse.app",
+    "productName": "Paddock Pulse",
+    "electronVersion": "44.9.3",
+    "electronDist": "node_modules/electron/dist",
+    "asar": true,
+    "compression": "maximum",
+    "electronLanguages": ["en-US"],
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.html",
+      "layout.js",
+      "f1login.js",
+      "server.js",
+      "f1feed.js",
+      "feedcore.js",
+      "replay.js",
+      "pitlane.js",
+      "stamp.js",
+      "main.js",
+      "preload.js",
+      "assets/icon.ico",
+      "assets/logo-mark-solid.svg",
+      "assets/fonts/*.woff2",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico",
+      "artifactName": "Paddock-Pulse-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "createDesktopShortcut": true,
+      "shortcutName": "Paddock Pulse"
+    }
+  },
+  "devDependencies": {
+    "electron": "github:castlabs/electron-releases#v44.9.3+wvcus",
+    "electron-builder": "^26.18.0"
+  },
+  "keywords": [
+    "formula1",
+    "f1",
+    "dashboard",
+    "electron",
+    "telemetry",
+    "replay"
+  ],
+  "license": "MIT"
+}

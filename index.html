@@ -1,0 +1,1490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paddock Pulse</title>
+<script>try{var t=localStorage.getItem('pp_theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else if(t!=='system')document.documentElement.dataset.theme='dark'}catch(e){}</script>
+<style>/* fonts are bundled (SIL Open Font License, see assets/fonts): no request to Google, works offline */
+@font-face{font-family:'Exo 2';font-weight:400;font-style:normal;font-display:swap;src:url(assets/fonts/exo-2-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Exo 2';font-weight:500;font-style:normal;font-display:swap;src:url(assets/fonts/exo-2-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Exo 2';font-weight:600;font-style:normal;font-display:swap;src:url(assets/fonts/exo-2-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Exo 2';font-weight:700;font-style:normal;font-display:swap;src:url(assets/fonts/exo-2-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Exo 2';font-weight:800;font-style:normal;font-display:swap;src:url(assets/fonts/exo-2-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-weight:400;font-style:normal;font-display:swap;src:url(assets/fonts/ibm-plex-mono-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-weight:500;font-style:normal;font-display:swap;src:url(assets/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-weight:700;font-style:italic;font-display:swap;src:url(assets/fonts/barlow-condensed-latin-700-italic.woff2) format('woff2')}
+</style>
+<style>
+/* default look: deep navy and red, in the spirit of the F1 TV site. Light and System are still available. */
+:root{color-scheme:dark;--red:#e10600;--hdr-bg:#10111f;--hdr-fg:#ffffff;
+  --page:#171929;--panel:#202337;--phbg:#2a2d44;--ink:#ffffff;--mute:#a4a8c0;--line:#33374f;--bd:#363a56;--bd2:#4d5275;
+  --hover:#30344f;--pin:#3a2335;--outtext:#6f7392;--barbg:#3b3f5e;--trk-case:#0a0b16;--trk-line:#c4c8de;
+  --soft:#ef5a50;--med:#f2c230;--hard:#f4f4f0;--inter:#4ab868;--wet:#4b8be0;--purple:#b57be0;--green:#58c27a;
+  --head:'Exo 2',system-ui,sans-serif;--body:'Exo 2',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+:root[data-theme=light]{color-scheme:light;--page:#e9ebf3;--panel:#ffffff;--phbg:#f2f3f9;--ink:#15172b;--mute:#666a85;--line:#e3e5ef;--bd:#d3d6e4;--bd2:#b5b9d0;
+  --hover:#eceef7;--pin:#fdeceb;--outtext:#9ea2ba;--barbg:#dadde9;--trk-case:#2b2e46;--trk-line:#f1f2f8;
+  --soft:#e0483f;--inter:#2f9a52;--wet:#3a7bd5;--purple:#8e44c8;--green:#2a8a45}
+@media (prefers-color-scheme:light){:root:not([data-theme=dark]):not([data-theme=light]){color-scheme:light;--page:#e9ebf3;--panel:#ffffff;--phbg:#f2f3f9;--ink:#15172b;--mute:#666a85;--line:#e3e5ef;--bd:#d3d6e4;--bd2:#b5b9d0;
+  --hover:#eceef7;--pin:#fdeceb;--outtext:#9ea2ba;--barbg:#dadde9;--trk-case:#2b2e46;--trk-line:#f1f2f8;
+  --soft:#e0483f;--inter:#2f9a52;--wet:#3a7bd5;--purple:#8e44c8;--green:#2a8a45}}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--page);color:var(--ink);font:14px/1.35 var(--body);overflow:hidden}
+button,select,input,textarea{font:inherit;color:inherit}
+button{background:transparent;border:1px solid var(--bd2);padding:3px 9px;cursor:pointer}
+button:hover{background:var(--hover)}button.on{background:var(--red);color:#fff}
+a{color:inherit}
+header{min-height:48px;display:flex;align-items:center;gap:12px;padding:6px 14px;background:var(--hdr-bg);color:var(--hdr-fg);flex-wrap:wrap}
+header .logo{font:700 26px var(--head);letter-spacing:.04em;text-transform:uppercase}
+header button,header select,header input{background:#2a2d33;color:var(--hdr-fg);border:1px solid #555;font-size:12px;padding:2px 8px}
+header input{width:110px}
+header button.on{background:var(--hdr-fg);color:var(--hdr-bg)}
+.badge{font:500 11px var(--mono);padding:2px 6px;border:1px solid currentColor;white-space:nowrap}
+.live{color:#6fd48b}.warn{color:#f2c230}.bad{color:#ff7a6e}
+#sessName{font:600 15px var(--head);letter-spacing:.04em;text-transform:uppercase}
+#wx{font:500 12px var(--mono);color:#b6b8bc}
+#track{display:flex;align-items:center;gap:6px;font:600 12px var(--mono)}
+#trackSw{width:12px;height:12px;background:#777}
+.grow{flex:1}
+#layoutUi{display:flex;gap:4px;align-items:center}
+
+/* free-form workspace */
+#ws{position:relative;height:calc(100vh - var(--hh,48px) - var(--rbh,0px));overflow:hidden}
+.panel{position:absolute;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--bd);min-width:160px;min-height:90px}
+.panel.hide{display:none}
+.ph{flex:none;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 10px;border-bottom:1px solid var(--bd);font:700 14px var(--head);letter-spacing:.06em;text-transform:uppercase;cursor:move;user-select:none;background:var(--phbg)}
+.ph .acts{display:flex;gap:4px;align-items:center}
+.ph button{padding:0 8px;font-size:12px;cursor:pointer}
+.pb{flex:1;min-height:0;overflow:auto;position:relative}
+.rz{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 50%,var(--ink) 50% 58%,transparent 58% 70%,var(--ink) 70% 78%,transparent 78%);opacity:.7}
+body.dragging{user-select:none}body.dragging webview{pointer-events:none}
+
+#rows{position:relative}
+.row{position:absolute;left:0;right:0;height:28px;display:grid;grid-template-columns:26px 5px 42px 1fr 64px 46px 18px;align-items:center;gap:6px;padding:0 8px 0 4px;border-bottom:1px solid var(--line);cursor:pointer;transition:transform .35s ease;background:var(--panel)}
+.row:hover{background:var(--hover)}.row.pin{background:var(--pin)}
+.row.out{color:var(--outtext)}.row.out .code,.row.out .pos{font-weight:500}
+.row .pos{font:700 16px var(--head);text-align:right}.row .bar{height:18px}
+.row .code{font:700 16px var(--head)}
+.row .gap,.row .ll{font:500 12px var(--mono);text-align:right}
+.row .ll.p{color:var(--purple)}.row .ll.g{color:var(--green)}
+.row .tyre{display:flex;align-items:center;gap:4px;font:500 11px var(--mono);justify-content:flex-end}
+.dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--ink);display:inline-block;flex:none}
+.row .pits{font:500 11px var(--mono);text-align:center;color:var(--mute)}
+#map{width:100%;height:100%;display:block;cursor:grab;touch-action:none}#map g[data-num]{cursor:pointer}
+#follow{position:absolute;left:10px;top:10px;min-width:230px;background:var(--panel);border:1px solid var(--bd);padding:8px 10px;z-index:3}
+#follow.hide{display:none}
+#follow .fh{display:flex;align-items:baseline;gap:8px}
+#follow #fCode{font:700 28px var(--head);border-left:6px solid var(--c,var(--ink));padding-left:8px;line-height:1}
+#follow #fName{font-size:12px;color:var(--mute)}
+#follow button{margin-left:auto;padding:0 7px}
+#follow .fv{display:flex;gap:16px;margin-top:6px;font:500 12px var(--mono);align-items:baseline}
+#follow .fv b{font:700 26px var(--head)}
+#follow .fs{font:500 11px var(--mono);color:var(--mute)}
+.bars{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:3px 0}
+.bar2{height:6px;background:var(--barbg)}.bar2 i{display:block;height:100%;width:0}
+.bar2.t i{background:var(--inter)}.bar2.b i{background:var(--soft)}
+[data-id=tiles] .pb{display:flex;overflow:hidden}
+#tiles{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;padding:8px}
+#tiles .trow{display:flex;gap:8px;flex:1 1 0;min-height:0}
+.tile{container-type:size;flex:1 1 0;min-width:0;min-height:0;background:var(--panel);border:1px solid var(--bd);padding:6px 8px;position:relative;display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.tile.empty{align-items:center;justify-content:center;color:var(--mute);font-size:13px;border-style:dashed;text-align:center}
+.tile .th{display:flex;align-items:baseline;gap:8px;min-width:0}
+.tile .tc{font:700 clamp(16px,9cqh,34px) var(--head);border-left:5px solid var(--c);padding-left:6px;white-space:nowrap}
+.tile .tn{font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none}
+.tile .tp{margin-left:auto;font:700 clamp(14px,7cqh,28px) var(--head);padding-right:14px}
+.tile .unpin{position:absolute;right:2px;top:-1px;border:0;background:none;padding:0 4px;color:var(--mute)}
+.tile .big{display:flex;align-items:baseline;gap:8px;min-width:0}
+.tile .big b{font:700 clamp(26px,26cqh,130px) var(--head);line-height:1}
+.tile .big .u{font:500 12px var(--mono);color:var(--mute)}
+.tile .big .g{margin-left:auto;font:500 12px var(--mono);white-space:nowrap}
+.tile .big .g b{font-size:clamp(18px,10cqh,46px)}
+.tile .l1,.tile .l2,.tile .l3,.tile .l4{display:none}
+.tile .l1 .meta{display:flex;justify-content:space-between;gap:6px;overflow:hidden;font:500 11px var(--mono);color:var(--mute);margin-top:3px}
+.tile .l1 .meta span{white-space:nowrap}
+.tile .drs.on{background:var(--inter);color:#fff}.tile .drs{padding:0 4px}
+.tile .l2,.tile .l4{flex:1 1 0;min-height:0;flex-direction:column;gap:4px}
+.tile canvas{width:100%;flex:1 1 0;min-height:18px;display:block}
+.tile .l3{grid-template-columns:repeat(3,1fr);gap:4px 10px}
+.tile .l3 div{font:500 12px var(--mono);min-width:0}.tile .l3 i{display:block;font:normal 500 10px var(--mono);color:var(--mute);text-transform:uppercase}
+.tile .l3 b{font:700 15px var(--head);letter-spacing:.02em}
+.tile .lbl{font:500 10px var(--mono);color:var(--mute);text-transform:uppercase}
+.tile .laps{font:500 11px var(--mono);color:var(--mute);white-space:nowrap;overflow:hidden}
+@container (min-width:200px){.tile .tn{display:block}}
+@container (max-width:175px){.tile .big .gl,.tile .big .u{display:none}.tile .l1 .meta .ll{display:none}}   /* narrow tile: keep the numbers, drop the labels that would be clipped */
+@container (min-height:120px){.tile .l1{display:block}}
+@container (min-height:185px){.tile .l2{display:flex}}
+@container (min-height:265px) and (min-width:240px){.tile .l3{display:grid}}
+@container (min-height:380px) and (min-width:280px){.tile .l4{display:flex}.tile .l2{display:none}}
+.item{display:grid;grid-template-columns:54px 1fr;gap:6px;padding:5px 10px;border-bottom:1px solid var(--line);font-size:13px}
+.item.new{animation:slide .35s ease}
+@keyframes slide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.item .tm{font:500 11px var(--mono);color:var(--mute)}
+.item .sw{display:inline-block;width:9px;height:9px;margin-right:6px;background:#777}
+.item .c{font:700 14px var(--head);border-left:4px solid var(--c);padding-left:5px;margin-right:6px}
+.item button{padding:0 6px;font-size:11px;margin-left:6px}
+.item.pinned{background:var(--pin)}
+.note{padding:10px;color:var(--mute);font-size:13px}
+#posNote{position:absolute;left:10px;right:10px;bottom:10px;background:var(--panel);border:1px solid var(--bd)}
+.wbody{padding:10px;display:flex;flex-direction:column;gap:8px;font-size:13px}
+.wbody a.btn,.wbody button{text-align:center;text-decoration:none;display:block;padding:7px;border:1px solid var(--bd);background:var(--panel)}
+.wbody a.btn.primary{background:var(--ink);color:var(--panel)}
+.tvb{display:flex;flex-direction:column;overflow:hidden}
+.tvb webview{display:flex;flex:1;width:100%;min-height:0;background:#14161a}
+#wait{position:fixed;inset:var(--hh,48px) 0 0 0;background:transparent;pointer-events:none;display:flex;align-items:center;justify-content:center;padding:20px;z-index:99999}
+#wait .box{pointer-events:auto;box-shadow:0 12px 40px rgba(0,0,0,.45)}
+#wait.hide{display:none}
+#replayBar{display:none;align-items:center;gap:10px;padding:6px 14px;background:var(--phbg);border-bottom:1px solid var(--bd);font:500 12px var(--mono);flex-wrap:wrap}
+body.replay #replayBar{display:flex}
+#replayBar .tag{background:var(--soft);color:#fff;padding:1px 8px;font:700 13px var(--head);letter-spacing:.1em}
+#replayBar b{font:700 15px var(--head);letter-spacing:.04em;text-transform:uppercase}
+#replayBar input[type=range]{accent-color:var(--ink);margin:0}
+#rpScrub{flex:1;min-width:220px}#rpSpeed{width:130px}
+#replayBar button{padding:1px 9px}
+#replayBar .sp{display:flex;align-items:center;gap:6px}
+.modalbg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:100000}
+.modalbg.show{display:flex}
+.modalbg .box{background:var(--panel);border:1px solid var(--bd);padding:20px 22px;width:460px;max-width:92vw;display:flex;flex-direction:column;gap:8px}
+.modalbg h3{font:700 24px var(--head);text-transform:uppercase;letter-spacing:.05em}
+.modalbg textarea{width:100%;padding:7px;background:var(--panel);color:var(--ink);border:1px solid var(--bd);font:12px var(--mono);resize:vertical}
+.modalbg .how{padding-left:18px;font-size:13px;color:var(--mute)}
+.modalbg .row2{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+#lgMsg{font-size:13px;min-height:18px}
+.srow{display:flex;flex-direction:column;gap:4px;padding:8px 0;border-top:1px solid var(--line)}
+.srow:first-of-type{border-top:0}
+.srow label{font-weight:600;font-size:13px;display:flex;gap:8px;align-items:center}
+.srow small{color:var(--mute);font-size:12px;line-height:1.35}
+.srow select{padding:6px 10px;background:var(--phbg);color:var(--ink);border:1px solid var(--bd2);border-radius:8px}
+#sLayouts{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+#sLayouts #layoutUi{flex-wrap:wrap}
+#settingsModal .box{max-height:92vh;overflow:auto;width:480px}
+#replayModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:100000}
+#replayModal.show{display:flex}
+#replayModal .box{background:var(--panel);border:1px solid var(--bd);padding:20px 22px;width:420px;max-width:92vw;display:flex;flex-direction:column;gap:6px}
+#replayModal h3{font:700 24px var(--head);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+#replayModal label{font:500 11px var(--mono);color:var(--mute);text-transform:uppercase;margin-top:6px}
+#replayModal select{width:100%;padding:7px;background:var(--panel);color:var(--ink);border:1px solid var(--bd);font-size:14px}
+#replayModal select:disabled{opacity:.5}
+#replayModal .row2{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+#rpMsg{font-size:13px;color:var(--mute);min-height:34px;margin-top:6px}
+#wait .box{max-width:520px;background:var(--panel);border:1px solid var(--bd);padding:22px;display:flex;flex-direction:column;gap:10px}
+#wait h2{font:700 28px var(--head);text-transform:uppercase;letter-spacing:.04em}
+@media (max-width:900px){
+  body{overflow:auto}#ws{height:auto;overflow:visible;padding:8px}
+  .panel{position:relative!important;left:auto!important;top:auto!important;width:auto!important;height:420px!important;margin-bottom:8px}.rz{display:none}
+}
+
+/* ---- F1 TV-style look: pills, soft corners, red accent, bold wide type ---- */
+*{scrollbar-width:thin;scrollbar-color:var(--bd2) transparent}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+button{border-radius:999px;font-weight:600;font-size:12px;padding:3px 12px;border-color:var(--bd2)}
+select,input,textarea{border-radius:8px}
+input[type=range]{accent-color:var(--red)}
+header{background:var(--hdr-bg);border-bottom:2px solid var(--red);padding:5px 16px;gap:10px;min-height:48px}
+header .logo{display:flex;align-items:center;gap:10px;font:italic 700 25px/1 'Barlow Condensed','Arial Narrow','Roboto Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+header .logo img{height:30px;width:auto;display:block}   /* under 48px: the solid mark, never the textured one */
+header .logo .wm{color:#F4F6FC}header .logo .wm b{font:inherit;color:#FF5A4F}
+header select,header input{background:#222640;color:#fff;border:1px solid #444a6e;border-radius:999px;padding:3px 12px;font-size:12px}
+header button{border-color:#4a4f73;color:#fff;background:transparent}
+header button:hover{background:#2a2e4a}
+header button.on{background:#fff;color:#15172b;border-color:#fff}
+#sessName{font:700 15px var(--head);letter-spacing:0;text-transform:none;color:#fff}
+.badge{border-radius:999px;padding:2px 10px;font-weight:600}
+#wx{color:#b7bad2}
+.panel{border-radius:12px;border:1px solid var(--bd);overflow:hidden;box-shadow:0 8px 22px rgba(0,0,0,.28)}
+:root[data-theme=light] .panel{box-shadow:0 4px 14px rgba(30,35,70,.10)}
+.ph{font:700 14px var(--head);letter-spacing:0;text-transform:none;padding:8px 12px;border-bottom:1px solid var(--bd);background:var(--phbg)}
+.ph>span:first-child::before{content:'';display:inline-block;width:3px;height:14px;background:var(--red);border-radius:2px;margin-right:9px;vertical-align:-2px}
+.ph button{padding:0 11px;font-size:11px}
+.row{border-bottom-color:var(--line)}
+.row .code,.row .pos{font-weight:800}
+.row .bar{border-radius:3px;width:5px}
+.tile{border-radius:12px;background:var(--phbg);border-color:var(--bd)}
+.tile .tc{border-left-width:4px;border-radius:2px}
+.tile .tn{font-weight:500}
+.item .c{border-left-width:3px}
+#follow{border-radius:12px;border-color:var(--bd2);box-shadow:0 8px 22px rgba(0,0,0,.35)}
+#follow #fCode{font-weight:800}
+#posNote{border-radius:10px}
+.wbody a.btn,.wbody button{border-radius:999px;border-color:var(--bd2);background:transparent;font-weight:600}
+.wbody a.btn.primary{background:var(--red);color:#fff;border-color:var(--red)}
+.tvb webview{background:#0b0c16}
+#replayBar{background:var(--phbg);border-bottom:1px solid var(--bd)}
+#replayBar .tag{border-radius:999px;padding:2px 12px;font-weight:800;letter-spacing:.08em}
+#replayBar b{font:700 15px var(--head);letter-spacing:0;text-transform:none}
+.modalbg .box,#replayModal .box,#wait .box{border-radius:16px;border-color:var(--bd2);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.modalbg h3,#replayModal h3,#wait h2{font:800 24px var(--head);text-transform:none;letter-spacing:0}
+.modalbg textarea,#replayModal select{background:var(--phbg);border:1px solid var(--bd2);border-radius:8px;color:var(--ink)}
+#replayModal label{font-family:var(--body);font-weight:600;letter-spacing:.04em}
+.dot{border-color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><img src="assets/logo-mark-solid.svg" alt=""><span class="wm">Paddock <b>Pulse</b></span></div>
+  <span id="sessName">Connecting</span>
+  <span id="status" class="badge warn">CONNECTING</span>
+  <span id="track"><i id="trackSw"></i><span id="trackTxt"></span></span>
+  <span id="wx"></span>
+  <span class="grow"></span>
+  <button id="loginBtn" title="Set or change your F1 TV login">F1 login</button>
+  <button id="replayBtn" title="Replay a recorded session">Replay</button>
+  <button id="settingsBtn" title="Interface size, theme, header and replay options">Settings</button>
+  <span id="layoutUi">
+    <button id="layoutAuto" title="Arrange the panels automatically when you turn them on or off">Auto layout</button>
+    <select id="layoutSel" title="Saved layouts"></select>
+    <input id="layoutName" placeholder="Layout name" maxlength="30">
+    <button id="layoutSave">Save layout</button>
+    <button id="layoutDel">Delete</button>
+    <button id="layoutReset">Reset</button>
+  </span>
+  <span id="toggles"></span>
+</header>
+
+<div id="replayBar">
+  <span class="tag">REPLAY</span><b id="rpTitle"></b>
+  <button id="rpPlay">Pause</button>
+  <button id="rpB5" title="Back 5 minutes">-5m</button><button id="rpB1" title="Back 1 minute">-1m</button><button id="rpF1" title="Forward 1 minute">+1m</button><button id="rpF5" title="Forward 5 minutes">+5m</button>
+  <span class="sp">Speed <input id="rpSpeed" type="range" min="0" max="7" step="1" value="2"><b id="rpSpeedTxt">1x</b></span>
+  <input id="rpScrub" type="range" min="0" max="1000" value="0"><span id="rpTime">0:00:00 / 0:00:00</span>
+  <span class="sp"><button id="rpSync" title="Line the F1 TV video and the data up at the same moment (for example lights out), then press this. After that, play, pause, skipping and speed on either side move both.">Sync video</button><span class="lapsync" title="Watch the broadcast lap counter. The moment it flips to a new lap, type that lap number and press Sync at lap."><input id="rpLap" type="number" min="1" max="99" value="1" style="width:48px" title="The lap the broadcast shows"><button id="rpLapBtn" title="Take the data AND the video to the start of this lap. If the app's current sync is wrong about the lap, it re-syncs to the video instead.">Sync at lap</button><button id="rpFlipBtn" title="Press the instant the broadcast lap counter flips to this lap: exact. The data jumps to the start of that lap; the video is not moved.">Flip!</button></span><button id="rpLights" title="Put the F1 TV video on the start of the session (lights out), then press this: the data jumps to the start and both are linked.">Sync at lights out</button><button id="rpVm30" class="nudge" title="Show the data 30 seconds earlier" hidden>-30s</button><button id="rpVm10" class="nudge" title="Show the data 10 seconds earlier" hidden>-10s</button><button id="rpVm" class="nudge" title="Show the data 1 second earlier" hidden>Data -1s</button><button id="rpVm2" class="nudge" title="Show the data 0.2 seconds earlier" hidden>-0.2</button><button id="rpVp2" class="nudge" title="Show the data 0.2 seconds later" hidden>+0.2</button><button id="rpVp" class="nudge" title="Show the data 1 second later" hidden>+1s</button><button id="rpVp10" class="nudge" title="Show the data 10 seconds later" hidden>+10s</button><button id="rpVp30" class="nudge" title="Show the data 30 seconds later" hidden>+30s</button></span><span id="rpSyncMsg" style="color:var(--mute)"></span>
+  <span id="rpTvMsg" style="color:var(--mute)"></span><a id="rpFind" href="https://f1tv.formula1.com" target="_blank" rel="noopener" style="color:inherit">Find on F1 TV</a><button id="rpExit">Exit replay</button>
+</div>
+<div id="replayModal"><div class="box">
+  <h3>Replay a session</h3>
+  <label for="rpYear">Year</label><select id="rpYear"></select>
+  <label for="rpTrack">Track</label><select id="rpTrack" disabled><option>Choose a year first</option></select>
+  <label for="rpSess">Session</label><select id="rpSess" disabled><option>Choose a track first</option></select>
+  <div id="rpMsg"></div>
+  <div class="row2"><button id="rpCancel">Cancel</button><button id="rpStart" class="on" disabled>Start replay</button></div>
+</div></div>
+<div id="settingsModal" class="modalbg"><div class="box">
+  <h3>Settings</h3>
+  <div class="srow" id="sZoomRow"><label for="sZoom">Interface size</label>
+    <select id="sZoom"><option value="auto">Auto (fits your screen)</option><option value="0.6">60%</option><option value="0.7">70%</option><option value="0.8">80%</option><option value="0.9">90%</option><option value="1">100%</option><option value="1.1">110%</option><option value="1.25">125%</option><option value="1.5">150%</option></select>
+    <small>Windows display scaling makes everything big: a 2560x1440 screen at 225% gives the app only about 1140 x 640 pixels to work with. Lower this to fit more on screen (about 75% there). Auto picks a size from your window.</small></div>
+  <div class="srow"><label for="themeSel">Colour theme</label>
+    <select id="themeSel"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+  <div class="srow"><label><input type="checkbox" id="sCompact"> Compact header</label>
+    <small>Moves the layout buttons (auto layout, saved layouts) out of the header and into this window, so the header takes less room.</small>
+    <div id="sLayouts"></div></div>
+  <div class="srow" id="sTvRow"><label for="sRef">Video the replay follows</label>
+    <select id="sRef"><option value="0">First F1 TV box</option><option value="1">F1 TV box 1</option><option value="2">F1 TV box 2</option><option value="3">F1 TV box 3</option><option value="4">F1 TV box 4</option></select>
+    <small>Replay sync reads its time from one F1 TV box; the others are moved to match. Pick the box showing the main broadcast if you watch an onboard in another.</small>
+    <label><input type="checkbox" id="sMute"> Mute extra F1 TV boxes when a replay opens (they would echo)</label></div>
+  <div class="row2"><button id="sReset">Reset settings</button><button id="sClose" class="on">Done</button></div>
+</div></div>
+<div id="loginModal" class="modalbg"><div class="box">
+  <h3>F1 login</h3>
+  <div id="lgInfo">F1 only sends car positions, telemetry and its recorded sessions to subscribers. Paste your F1 TV login below.</div>
+  <ol class="how"><li>Sign in at f1tv.formula1.com in your browser.</li><li>Open developer tools (F12), then Application (Storage in Firefox), then Cookies, then f1tv.formula1.com.</li><li>Copy the Value of <b>login-session</b> and paste it here.</li></ol>
+  <textarea id="lgText" rows="4" placeholder="Paste the login-session value here" spellcheck="false"></textarea>
+  <div id="lgMsg"></div>
+  <div class="row2"><button id="lgCancel">Cancel</button><button id="lgSave" class="on">Save</button></div>
+</div></div>
+<div id="wait" class="hide"><div class="box"><h2 id="waitH">No live session</h2><div id="waitP"></div><a href="https://f1tv.formula1.com" target="_blank" rel="noopener">Open F1 TV</a><button id="waitX" title="Hide this message">Hide</button></div></div>
+
+<div id="ws">
+  <div class="panel" data-id="timing" data-title="Timing"><div class="ph"><span>Timing</span><span class="acts"><button id="gapBtn">Interval</button></span></div><div class="pb"><div id="rows"></div></div><i class="rz"></i></div>
+  <div class="panel" data-id="map" data-title="Map"><div class="ph"><span id="mapTitle">Track</span><span class="acts"><span id="lapNo" style="font:500 12px var(--mono);letter-spacing:0"></span><button id="zOut" title="Zoom out">-</button><button id="zIn" title="Zoom in">+</button><button id="zFit" title="Show the whole track">Fit</button></span></div><div class="pb" style="overflow:hidden"><svg id="map" preserveAspectRatio="xMidYMid meet"></svg><div id="follow" class="hide"><div class="fh"><b id="fCode">---</b><span id="fName"></span><button id="fStop" title="Stop following (Esc)">x</button></div><div class="fv"><span><b id="fSp">0</b> km/h</span><span>G<b id="fGr">N</b></span><span><b id="fRpm">0</b> rpm</span></div><div class="bars"><div class="bar2 t"><i id="fThr"></i></div><div class="bar2 b"><i id="fBrk"></i></div></div><div class="fs" id="fSub"></div></div></div><i class="rz"></i></div>
+  <div class="panel" data-id="tiles" data-title="Tiles"><div class="ph"><span>Driver tiles</span></div><div class="pb"><div id="tiles"></div></div><i class="rz"></i></div>
+  <div class="panel" data-id="rc" data-title="Race control"><div class="ph"><span>Race control</span></div><div class="pb" id="rcList"><div class="note">Waiting for messages.</div></div><i class="rz"></i></div>
+  <div class="panel" data-id="radio" data-title="Radio"><div class="ph"><span>Team radio</span><span class="acts"><button id="autoBtn" title="Play new radio from pinned drivers automatically">Auto-play pinned</button></span></div><div class="pb" id="radioList"><div class="note">Waiting for radio.</div></div><i class="rz"></i></div>
+  <div class="panel" data-id="watch" data-title="Watch"><div class="ph"><span>Watch</span></div><div class="pb"><div class="wbody">
+    <div>Video plays in F1 TV, not in this page. Put the two side by side, or use the desktop app for F1 TV boxes.</div>
+    <a class="btn primary" href="https://f1tv.formula1.com" target="_blank" rel="noopener">Open F1 TV</a>
+    <button id="popBtn">Open F1 TV in a side window</button></div></div><i class="rz"></i></div>
+</div>
+
+<script src="layout.js"></script>
+<script>
+'use strict';
+/* ---------- helpers ---------- */
+const SET_DEFAULT={zoom:'auto',compact:false,ref:0,muteExtra:true};
+let SETTINGS=Object.assign({},SET_DEFAULT,(()=>{try{return JSON.parse(localStorage.getItem('pp_settings'))||{}}catch{return {}}})());
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const iso=ms=>new Date(ms).toISOString();
+const fmtLap=s=>{if(s==null||!isFinite(s))return '-';const m=Math.floor(s/60);return m+':'+(s-m*60).toFixed(3).padStart(6,'0')};
+const clk=ms=>new Date(ms).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const TYRE={SOFT:'var(--soft)',MEDIUM:'var(--med)',HARD:'var(--hard)',INTERMEDIATE:'var(--inter)',WET:'var(--wet)'};
+const FORCE=new URLSearchParams(location.search).has('force');
+const DESKTOP=!!(window.desktop&&window.desktop.isDesktop)||new URLSearchParams(location.search).has('desktoptest');
+function greyOf(hex){const n=parseInt(hex.slice(1),16),m=(c,g)=>Math.round(c*.35+g*.65);return '#'+[m(n>>16&255,138),m(n>>8&255,141),m(n&255,146)].map(v=>v.toString(16).padStart(2,'0')).join('')}
+
+/* ---------- OpenF1-shaped client (queued, retried) ---------- */
+let API='/openf1/v1',CFG={proxy:false},SPACING=220,lastReq=0,chain=Promise.resolve();
+function api(path){
+  const run=async()=>{
+    for(let a=0;a<4;a++){
+      const w=lastReq+SPACING-Date.now();if(w>0)await new Promise(r=>setTimeout(r,w));lastReq=Date.now();
+      try{
+        const c=new AbortController(),to=setTimeout(()=>c.abort(),15000);
+        const r=await fetch(API+path,{signal:c.signal});clearTimeout(to);
+        if(r.status===401||r.status===403){const e=new Error('auth');e.auth=true;throw e}
+        if(r.status===429||r.status>=500){await new Promise(r=>setTimeout(r,1000*(a+1)));continue}
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        const j=await r.json();return Array.isArray(j)?j:[];
+      }catch(e){if(e.auth||a===3)throw e;await new Promise(r=>setTimeout(r,400*(a+1)))}
+    }
+    throw new Error('rate limited');
+  };
+  const p=chain.then(run);chain=p.catch(()=>{});return p;
+}
+
+/* ---------- state ---------- */
+let S=null,K=null,epoch=0,frameOn=false;const tvViews={};
+const D=new Map();
+let order=[],pins=store.get('pp_pins')||[],gapMode='int',auto=false;
+const cur={loc:0,cd:0,int:0,pos:0,rc:0,radio:0};
+const lapsBy=new Map();
+let globalBest=Infinity,lastDataAt=0,errCount=0,totalLaps=0,curLap=0,lagMin=null;
+let track=null,carG=null,outlineReady=false,drawnPts=0,pitLane=null,pitBest=0,lastDraw=null,pitBoxes=[],outKey='';
+
+function setStatus(txt,cls){const b=$('#status');b.textContent=txt;b.className='badge '+cls}
+let waitHidden='';
+function showWait(h,p){if(waitHidden===h+p)return;$('#wait').classList.remove('hide');$('#waitH').textContent=h;$('#waitP').textContent=p}
+
+/* ---------- workspace: movable, resizable panels + saved layouts ---------- */
+let AUTO=store.get('pp_auto')!==false;
+const ws=$('#ws');let zTop=10,L={};          // L: id -> {x,y,w,h,z,hide}
+const LAYOUTS_KEY='pp_layouts',CUR_KEY='pp_layout_cur';
+const panelEl=id=>ws.querySelector(`.panel[data-id="${id}"]`);
+function defaultLayout(){
+  const W=Math.max(ws.clientWidth,1000),H=Math.max(ws.clientHeight,600),rw=360,rx=W-rw-8,cx=356,cw=rx-8-cx,mh=Math.round(H*.52),ly=8+mh+8,lh=H-ly-8;
+  const out={timing:{x:8,y:8,w:340,h:H-16},map:{x:cx,y:8,w:cw,h:mh},rc:{x:rx,y:8,w:rw,h:Math.round(H*.34)},radio:{x:rx,y:8+Math.round(H*.34)+8,w:rw,h:Math.round(H*.34)}};
+  const tw=DESKTOP?Math.round(cw*.38):cw;
+  out.tiles={x:cx,y:ly,w:tw,h:lh};
+  out.watch={x:rx,y:8+Math.round(H*.68)+16,w:rw,h:H-(8+Math.round(H*.68)+16)-8,hide:DESKTOP};
+  if(DESKTOP){out.tv1={x:cx+tw+8,y:ly,w:cw-tw-8,h:lh}}
+  return out;
+}
+function visNow(){const v={};for(const k of ['timing','map','tiles','rc','radio','watch'])v[k]=!!L[k]&&!L[k].hide;v.tv=Object.keys(L).filter(k=>k.startsWith('tv')).length;return v}
+function relayout(){
+  if(!AUTO||!window.PPLayout||window.innerWidth<=900||ws.clientWidth<500)return;
+  const r=PPLayout.computeLayout(visNow(),ws.clientWidth,ws.clientHeight,{});
+  const tvIds=Object.keys(L).filter(k=>k.startsWith('tv')).sort();   // the engine calls them tv1..tvN; ours may have gaps (tv1, tv3)
+  tvIds.forEach((id,i)=>{if(r['tv'+(i+1)])Object.assign(L[id],r['tv'+(i+1)])});
+  for(const k of Object.keys(r))if(L[k]&&!k.startsWith('tv'))Object.assign(L[k],r[k]);
+  applyLayout();saveCur();
+}
+function setAuto(on){AUTO=on;store.set('pp_auto',on);$('#layoutAuto').classList.toggle('on',on);$('#layoutAuto').textContent=on?'Auto layout: on':'Auto layout: off';if(on)relayout()}
+function applyLayout(){
+  for(const [id,r] of Object.entries(L)){
+    const e=panelEl(id);if(!e)continue;
+    e.style.left=r.x+'px';e.style.top=r.y+'px';e.style.width=r.w+'px';e.style.height=r.h+'px';e.style.zIndex=r.z||1;
+    e.classList.toggle('hide',!!r.hide);
+  }
+  syncToggles();
+}
+function saveCur(){store.set(CUR_KEY,L)}
+function ensureTv(){ // create/remove TV panels so they match L
+  for(const id of Object.keys(L))if(id.startsWith('tv')&&!panelEl(id)&&DESKTOP)makeTv(id);
+  ws.querySelectorAll('.panel[data-id^="tv"]').forEach(e=>{if(!L[e.dataset.id])e.remove()});
+}
+function loadLayout(obj){
+  L=JSON.parse(JSON.stringify(obj));
+  const d=defaultLayout();for(const k of Object.keys(d))if(!L[k]&&(!k.startsWith('tv')||DESKTOP))L[k]=d[k];
+  const W=ws.clientWidth,H=ws.clientHeight; // keep panels inside the current window (a saved layout may come from a bigger one)
+  for(const k of Object.keys(L)){const r=L[k];if(!r.z)r.z=++zTop;
+    if(W>300&&H>200){r.w=Math.min(r.w,W-16);r.h=Math.min(r.h,H-16);r.x=clamp(r.x,0,Math.max(0,W-140));r.y=clamp(r.y,0,Math.max(0,H-70))}}
+  ensureTv();applyLayout();saveCur();
+}
+const GAP=8,MINW=180,MINH=110;
+// panels sitting against A's right/bottom edge, plus the ones lined up with them (so a row or column stays aligned)
+function touching(id,side,snap){
+  const a=snap[id],set=new Set();
+  for(const k of Object.keys(snap)){
+    if(k===id)continue;const b=snap[k];
+    if(side==='r'?(Math.abs(b.x-(a.x+a.w+GAP))<=3&&b.y<a.y+a.h-8&&a.y<b.y+b.h-8):(Math.abs(b.y-(a.y+a.h+GAP))<=3&&b.x<a.x+a.w-8&&a.x<b.x+b.w-8))set.add(k);
+  }
+  for(const k of [...set])for(const c of Object.keys(snap)){
+    if(c===id||set.has(c))continue;const b=snap[k],d=snap[c];
+    if(side==='r'?(Math.abs(d.x-b.x)<=3&&Math.abs(d.x+d.w-b.x-b.w)<=3):(Math.abs(d.y-b.y)<=3&&Math.abs(d.y+d.h-b.y-b.h)<=3))set.add(c);
+  }
+  return [...set];
+}
+// panels ending on the same line as A that face the same neighbours (e.g. the F1 TV boxes beside the map)
+function siblings(id,side,snap,nbrs){
+  const a=snap[id],out=[];
+  for(const k of Object.keys(snap)){
+    if(k===id||nbrs.includes(k))continue;const c=snap[k];
+    const same=side==='b'?Math.abs(c.y+c.h-(a.y+a.h))<=3:Math.abs(c.x+c.w-(a.x+a.w))<=3;
+    if(!same)continue;
+    const faces=nbrs.some(n=>{const b=snap[n];return side==='b'
+      ?(Math.abs(b.y-(c.y+c.h+GAP))<=3&&b.x<c.x+c.w-8&&c.x<b.x+b.w-8)
+      :(Math.abs(b.x-(c.x+c.w+GAP))<=3&&b.y<c.y+c.h-8&&c.y<b.y+b.h-8)});
+    if(faces)out.push(k);
+  }
+  return out;
+}
+// a stack of panels (same column) ending on a sibling: they share a height change in proportion
+function chainOf(k,snap){
+  const chain=[k];let cur=snap[k];
+  for(;;){
+    const up=Object.keys(snap).find(c=>!chain.includes(c)&&Math.abs(snap[c].x-cur.x)<=3&&Math.abs(snap[c].w-cur.w)<=3&&Math.abs(snap[c].y+snap[c].h+GAP-cur.y)<=3);
+    if(!up)break;chain.unshift(up);cur=snap[up];
+  }
+  return chain;
+}
+// after a resize step: if panels now overlap, shrink the one that is above / to the left so it ends where the other begins.
+// If that would make it too small, report failure (the caller then keeps the last good arrangement).
+function fixOverlaps(){
+  const ids=Object.keys(L).filter(k=>!L[k].hide&&panelEl(k));
+  for(let pass=0;pass<6;pass++){
+    let changed=false;
+    for(const a of ids)for(const b of ids){
+      if(a===b)continue;const p=L[a],q=L[b];
+      if(!(p.x<q.x+q.w-1&&q.x<p.x+p.w-1&&p.y<q.y+q.h-1&&q.y<p.y+p.h-1))continue;
+      const sv=p.y<q.y?(p.y+p.h)-(q.y-GAP):Infinity,sh=p.x<q.x?(p.x+p.w)-(q.x-GAP):Infinity;
+      if(sv<=sh&&p.h-sv>=MINH){p.h-=sv;changed=true}
+      else if(sh<Infinity&&p.w-sh>=MINW){p.w-=sh;changed=true}
+      else return false;
+    }
+    if(!changed)return true;
+  }
+  return false;
+}
+function drag(e,id,mode){
+  const r=L[id],sx=e.clientX,sy=e.clientY,o={...r};document.body.classList.add('dragging');
+  const snap={};for(const k of Object.keys(L))if(!L[k].hide&&panelEl(k))snap[k]={...L[k]};
+  const save=()=>{const o={};for(const k of Object.keys(L))o[k]={...L[k]};return o};let good=save();
+  const W=ws.clientWidth,H=ws.clientHeight,rN=mode==='size'?touching(id,'r',snap):[],bN=mode==='size'?touching(id,'b',snap):[];
+  const rS=rN.length?siblings(id,'r',snap,rN):[],bS=bN.length?siblings(id,'b',snap,bN):[];
+  const chains=[];for(const k of bS){if(chains.some(c=>c.includes(k)))continue;chains.push(chainOf(k,snap))}
+  const lock=mode==='size'&&id.startsWith('tv');
+  const tvInfo=new Map();
+  for(const c of chains){
+    if(!c.every(k=>k.startsWith('tv')))continue;
+    const f=snap[c[0]],l=snap[c[c.length-1]],top=f.y,bot=l.y+l.h;
+    const leftN=Object.keys(snap).filter(k=>!c.includes(k)&&Math.abs(snap[k].x+snap[k].w+GAP-f.x)<=3&&snap[k].y<bot-8&&top<snap[k].y+snap[k].h-8);
+    if(!leftN.length)continue;
+    const H0=bot-top,gaps=GAP*(c.length-1),wMax=f.w+Math.min(...leftN.map(k=>snap[k].w-300));
+    tvInfo.set(c,{leftN,right:f.x+f.w,H0,gaps,n:c.length,hMax:(wMax-2)*9/16+34,hMin:(300-2)*9/16+34});
+  }
+  const move=ev=>{
+    let dx=ev.clientX-sx,dy=ev.clientY-sy;
+    if(mode==='move'){
+      if(AUTO&&(Math.abs(dx)>3||Math.abs(dy)>3))setAuto(false);
+      r.x=clamp(o.x+dx,-r.w+120,W-120);r.y=clamp(o.y+dy,0,H-34);applyLayout();return;
+    }
+    // resizing: the panels touching this edge give up (or take back) the space, so the layout stays tiled
+    const maxDx=rN.length?Math.min(...rN.map(k=>snap[k].w-MINW)):Math.max(0,W-GAP-(o.x+o.w));
+    let maxDy=bN.length?Math.min(...bN.map(k=>snap[k].h-MINH)):Math.max(0,H-GAP-(o.y+o.h));
+    let minDy=MINH-o.h;
+    for(const c of chains){const top=snap[c[0]].y,bot=snap[c[c.length-1]].y+snap[c[c.length-1]].h,H0=bot-top,gaps=GAP*(c.length-1),mh=Math.min(...c.map(k=>snap[k].h));minDy=Math.max(minDy,MINH/mh*(H0-gaps)+gaps-H0)}
+    for(const [c,t] of tvInfo){maxDy=Math.min(maxDy,t.n*t.hMax+t.gaps-t.H0);minDy=Math.max(minDy,t.n*t.hMin+t.gaps-t.H0)}
+    const minDx=Math.max(MINW-o.w,...rS.map(k=>MINW-snap[k].w));
+    if(lock&&!ev.shiftKey){ // keep the video area 16:9: the width drives the height (hold Shift for free resizing)
+      const dy0=((o.w-2)*9/16+34)-o.h,want=Math.abs(dx)>=Math.abs((dy-dy0)*16/9)?dx:(dy-dy0)*16/9;
+      const lo=Math.max(minDx,(minDy-dy0)*16/9),hi=Math.min(Math.max(maxDx,minDx),(Math.max(maxDy,minDy)-dy0)*16/9);
+      dx=clamp(want,lo,Math.max(lo,hi));dy=dy0+dx*9/16;
+    }else{dx=clamp(dx,minDx,Math.max(maxDx,minDx));dy=clamp(dy,minDy,Math.max(maxDy,minDy))}
+    r.w=o.w+dx;r.h=o.h+dy;
+    for(const k of rN){L[k].x=snap[k].x+dx;L[k].w=snap[k].w-dx}
+    for(const k of bN){L[k].y=snap[k].y+dy;L[k].h=snap[k].h-dy}
+    for(const k of rS)L[k].w=snap[k].w+dx;
+    for(const c of chains){
+      const top=snap[c[0]].y,bot=snap[c[c.length-1]].y+snap[c[c.length-1]].h,H0=bot-top,gaps=GAP*(c.length-1),scale=(H0+dy-gaps)/(H0-gaps);
+      const t=tvInfo.get(c);
+      if(t){ // equal 16:9 boxes; the panels on their left (the map) give up or take back the width
+        const hh=(H0+dy-gaps)/c.length,w=(hh-34)*16/9+2,x=t.right-w;let y=top;
+        for(const k of c){Object.assign(L[k],{x,y,w,h:hh});y+=hh+GAP}
+        for(const ln of t.leftN)L[ln].w=(x-GAP)-snap[ln].x;
+      }else{let y=top;for(const k of c){L[k].y=y;L[k].h=snap[k].h*scale;y+=L[k].h+GAP}}
+    }
+    if(fixOverlaps())good=save();else for(const k of Object.keys(good))Object.assign(L[k],good[k]);   // could not make room: keep the last good arrangement
+    applyLayout();
+  };
+  const up=()=>{document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',up);document.body.classList.remove('dragging');saveCur()};
+  document.addEventListener('pointermove',move);document.addEventListener('pointerup',up);
+}
+function wirePanel(e){
+  const id=e.dataset.id;
+  e.addEventListener('pointerdown',()=>{if(L[id]){L[id].z=++zTop;e.style.zIndex=L[id].z}},true);
+  e.querySelector('.ph').addEventListener('pointerdown',ev=>{if(ev.target.closest('button,input,select'))return;ev.preventDefault();drag(ev,id,'move')});
+  e.querySelector('.rz').addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();drag(ev,id,'size')});
+}
+function makeTv(id){
+  const e=el('div','panel');e.dataset.id=id;e.dataset.title='F1 TV';
+  e.innerHTML='<div class="ph"><span>F1 TV</span><span class="acts"><button data-a="home">Home</button><button data-a="back">Back</button><button data-a="reload">Reload</button><button data-a="fill" title="Show the whole picture, with black bars, instead of cropping it to fill the box">Whole picture</button><button data-a="drm" title="Check whether this window can play protected video">Video check</button><button data-a="mute">Mute</button><button data-a="close">Close</button></span></div><div class="pb tvb"></div><i class="rz"></i>';
+  const wv=document.createElement('webview');tvViews[id]=wv;
+  wv.addEventListener('dom-ready',()=>{wv._ready=true});
+  if(REPLAY_TV.meta)sendTvToReplay(REPLAY_TV.meta,id);
+  wv.setAttribute('src','https://f1tv.formula1.com');wv.setAttribute('partition','persist:f1tv');wv.setAttribute('webpreferences','backgroundThrottling=no');wv.setAttribute('allowpopups','');
+  e.querySelector('.pb').append(wv);
+  let fill=!!(L[id]&&L[id].fill),fillKey=null;
+  let fillChain=Promise.resolve();   // one change at a time, so a fast double click cannot leave the old style behind
+  const applyFill=()=>fillChain=fillChain.then(async()=>{try{if(fillKey){await wv.removeInsertedCSS(fillKey);fillKey=null}if(fill)fillKey=await wv.insertCSS('video{object-fit:contain!important}')}catch(x){}});
+  wv.addEventListener('dom-ready',()=>{fillKey=null;if(fill)applyFill()});
+  e.querySelector('[data-a=fill]').classList.toggle('on',fill);
+  e.querySelector('.acts').addEventListener('click',ev=>{
+    const a=ev.target.dataset.a;if(!a)return;
+    if(a==='home')wv.loadURL('https://f1tv.formula1.com');
+    else if(a==='back'){if(wv.canGoBack())wv.goBack()}
+    else if(a==='reload')wv.reload();
+    else if(a==='fill'){fill=!fill;ev.target.classList.toggle('on',fill);if(L[id])L[id].fill=fill;saveCur();applyFill()}
+    else if(a==='drm'){
+      const code=`(async()=>{const out=[];
+        const t=async(name,rob)=>{try{const k=await navigator.requestMediaKeySystemAccess('com.widevine.alpha',[{initDataTypes:['cenc'],videoCapabilities:[{contentType:'video/mp4;codecs="avc1.42E01E"',robustness:rob}],audioCapabilities:[{contentType:'audio/mp4;codecs="mp4a.40.2"',robustness:rob}]}]);out.push(name+': available');}catch(e){out.push(name+': NOT available ('+e.message+')')}};
+        await t('Widevine software (L3)','SW_SECURE_CRYPTO');await t('Widevine hardware (L1)','HW_SECURE_ALL');
+        out.push('Page: '+location.href);return out.join(' | ')})()`;
+      wv.executeJavaScript(code).then(r=>showNote(e,r)).catch(x=>showNote(e,'Check failed: '+x.message));
+    }
+    else if(a==='mute'){const m=!wv.isAudioMuted();wv.setAudioMuted(m);ev.target.textContent=m?'Unmute':'Mute'}
+    else if(a==='close'){delete L[id];e.remove();saveCur();syncToggles();relayout()}
+  });
+  ws.append(e);wirePanel(e);
+}
+function showNote(panel,text){
+  let n=panel.querySelector('.drmnote');if(!n){n=el('pre','drmnote');n.style.cssText='position:absolute;left:8px;right:8px;top:8px;background:#14161a;color:#e9e9e3;padding:10px;font:12px/1.5 var(--mono);white-space:pre-wrap;z-index:5;cursor:pointer';n.title='Click to close';n.onclick=()=>n.remove();panel.querySelector('.pb').append(n)}
+  n.textContent=text+'  (click to close)';
+}
+function addTv(){
+  let id=null;for(let i=1;i<=4;i++)if(!L['tv'+i]){id='tv'+i;break}
+  if(!id)return;
+  const W=ws.clientWidth,H=ws.clientHeight;
+  L[id]={x:Math.max(8,W/2-300),y:Math.max(8,H/2-200),w:640,h:400,z:++zTop};
+  makeTv(id);applyLayout();saveCur();relayout();
+}
+function syncToggles(){
+  const box=$('#toggles');box.innerHTML='';
+  ws.querySelectorAll('.panel').forEach(e=>{
+    if(e.dataset.id.startsWith('tv'))return;
+    const hidden=!!(L[e.dataset.id]&&L[e.dataset.id].hide);
+    const b=el('button',hidden?'':'on',e.dataset.title);
+    b.onclick=()=>{L[e.dataset.id].hide=!L[e.dataset.id].hide;if(!L[e.dataset.id].hide)L[e.dataset.id].z=++zTop;applyLayout();saveCur();relayout()};
+    box.append(b,' ');
+  });
+  if(DESKTOP){const b=el('button','','+ F1 TV box');b.onclick=addTv;box.append(b)}
+}
+function layoutUi(){
+  const sel=$('#layoutSel');
+  const fill=(pick)=>{const all=store.get(LAYOUTS_KEY)||{};sel.innerHTML='';const o0=el('option','','Layouts...');o0.value='';sel.append(o0);
+    for(const n of Object.keys(all)){const o=el('option','',n);o.value=n;sel.append(o)}sel.value=pick||''};
+  fill();
+  sel.onchange=()=>{const all=store.get(LAYOUTS_KEY)||{};if(all[sel.value]){setAuto(false);loadLayout(all[sel.value])}};
+  $('#layoutAuto').onclick=()=>setAuto(!AUTO);
+  $('#layoutSave').onclick=()=>{const n=$('#layoutName').value.trim();if(!n)return $('#layoutName').focus();const all=store.get(LAYOUTS_KEY)||{};all[n]=JSON.parse(JSON.stringify(L));store.set(LAYOUTS_KEY,all);fill(n);$('#layoutName').value=''};
+  $('#layoutDel').onclick=()=>{const all=store.get(LAYOUTS_KEY)||{};if(sel.value&&all[sel.value]){delete all[sel.value];store.set(LAYOUTS_KEY,all);fill()}};
+  $('#layoutReset').onclick=()=>{loadLayout({});sel.value='';setAuto(true)};
+}
+function initWorkspace(){
+  ws.querySelectorAll('.panel').forEach(wirePanel);
+  const saved=store.get(CUR_KEY);
+  loadLayout(saved&&saved.timing&&saved.map?saved:{});
+  layoutUi();setAuto(AUTO);
+  let rt=null;const again=()=>{clearTimeout(rt);rt=setTimeout(relayout,120)};window.addEventListener('resize',again);new ResizeObserver(again).observe(ws);
+}
+
+/* ---------- boot ---------- */
+async function boot(){
+  try{const c=await(await fetch('/config')).json();if(c&&c.proxy)CFG=c}catch{}
+  if(!CFG.proxy){API='https://api.openf1.org/v1';SPACING=380}
+  await findLive();
+}
+async function findLive(){
+  try{
+    const s=(await api('/sessions?session_key=latest'))[0];
+    if(!s)throw new Error('no session');
+    const now=Date.now(),st=Date.parse(s.date_start),en=Date.parse(s.date_end);
+    const live=now>=st-15*60000&&now<=en+10*60000;
+    if(!live&&!FORCE){
+      const ended=now>en,mins=Math.round(Math.abs(ended?now-en:st-now)/60000);
+      const when=mins>2880?Math.round(mins/1440)+' days':mins>120?Math.round(mins/60)+' hours':mins+' minutes';
+      showWait('No live session right now',`Latest session: ${s.year} ${s.country_name} ${s.session_name}, ${ended?'ended '+when+' ago':'starts in '+when}. This page starts by itself when a session goes live.`);
+      setStatus('WAITING','warn');$('#sessName').textContent='';
+      setTimeout(findLive,30000);return;
+    }
+    $('#wait').classList.add('hide');
+    startSession(s);
+  }catch(e){
+    if(e.auth&&CFG.f1feed){showWait('Connecting to the live feed','Starting up. This retries by itself.');setStatus('CONNECTING','warn');setTimeout(findLive,4000);return}
+    if(e.auth){showWait('OpenF1 needs a login','The server was not given valid OpenF1 credentials. See the README.');setStatus('NO ACCESS','bad')}
+    else{showWait('Cannot reach the data source','Retrying every 30 seconds.');setStatus('OFFLINE','bad')}
+    setTimeout(findLive,30000);
+  }
+}
+async function startSession(s){
+  const ep=epoch;S=s;K=s.session_key;
+  $('#sessName').textContent=`${s.year} ${s.country_name} ${s.session_name}`;
+  $('#mapTitle').textContent=s.circuit_short_name||'Track';
+  const drv=await api('/drivers?session_key='+K);
+  if(ep!==epoch)return;
+  for(const d of drv){
+    if(D.has(d.driver_number))continue;
+    const color='#'+(d.team_colour||'888888');
+    D.set(d.driver_number,{num:d.driver_number,code:d.name_acronym,name:d.full_name||d.name_acronym,last:d.last_name||d.name_acronym,team:d.team_name||'',color,grey:greyOf(color),retired:!!d.retired,
+      pos:99,int:null,gap:null,q:[],trail:[],cd:null,hist:[],lap:0,lastLap:null,bestLap:null,stints:[],pits:0});
+  }
+  buildRows();buildTiles();
+  const t=Date.now();cur.loc=t-150000;cur.cd=t-20000;cur.int=t-90000;cur.pos=0;
+  // the pit lane and circuit outline come from the server (traced from F1's recordings of this circuit and season);
+  // anything saved by older versions (guessed from live cars) is thrown away
+  try{for(const k of Object.keys(localStorage))if(/^pp_(pit|outline|outline2)_/.test(k))localStorage.removeItem(k)}catch{}
+  outKey='pp_outline3_'+s.circuit_key+'_'+s.year;
+  let cached=store.get(outKey);
+  if(cached&&cached.length>50){drawTrack([cached],true);outlineReady=true}
+  else loadOutline(s).catch(()=>{});
+  loadPitLane(0);
+  await Promise.all([pollLaps(true),pollSlow(),pollMid()]).catch(()=>{});
+  if(ep!==epoch)return;
+  loop(pollFast,1500);loop(pollMid,4000);loop(pollSlow,15000);
+  if(!frameOn){frameOn=true;requestAnimationFrame(frame)}
+}
+function loop(fn,ms){const ep=epoch;const run=async()=>{if(ep!==epoch)return;try{await fn();errCount=0}catch(e){errCount++;if(e.auth)setStatus('NO ACCESS','bad')}if(ep===epoch)setTimeout(run,ms)};run()}
+
+/* ---------- pollers ---------- */
+async function pollFast(){
+  const ep=epoch;
+  const [loc,cd]=await Promise.all([api(`/location?session_key=${K}&date>${iso(cur.loc)}`),api(`/car_data?session_key=${K}&date>${iso(cur.cd)}`)]);
+  if(ep!==epoch)return;
+  loc.sort((a,b)=>a.date<b.date?-1:1);
+  let newest=0;
+  for(const r of loc){
+    const t=Date.parse(r.date);if(t>cur.loc)cur.loc=t;
+    const d=D.get(r.driver_number);if(!d||(!r.x&&!r.y))continue;
+    const last=d.q.length?d.q[d.q.length-1].t:0;if(t<=last)continue;
+    d.q.push({t,x:r.x,y:r.y});
+    if(!r.pit&&d.trail.length<1400)d.trail.push([r.x,r.y]);
+    if(t>newest)newest=t;
+  }
+  if(newest){lastDataAt=Math.max(lastDataAt,newest);const age=Date.now()-newest;lagMin=lagMin==null?age:Math.min(lagMin+60,age)}
+  cd.sort((a,b)=>a.date<b.date?-1:1);
+  for(const r of cd){
+    const t=Date.parse(r.date);if(t>cur.cd)cur.cd=t;
+    const d=D.get(r.driver_number);if(!d)continue;
+    d.cd=r;d.hist.push([t,r.speed,r.throttle,r.brake]);
+  }
+  const cut=Date.now()-70000;for(const d of D.values())if(d.hist.length&&d.hist[0][0]<cut)d.hist=d.hist.filter(h=>h[0]>=cut);
+  for(const d of D.values())if(d.hist.length>2600)d.hist.splice(0,d.hist.length-2000);   // bound memory when a replay runs fast
+  if(!outlineReady)tryOutline();
+}
+async function pollMid(){
+  const ep=epoch;
+  const [iv,po]=await Promise.all([api(`/intervals?session_key=${K}&date>${iso(cur.int)}`),api(`/position?session_key=${K}`+(cur.pos?`&date>${iso(cur.pos)}`:''))]);
+  if(ep!==epoch)return;
+  iv.sort((a,b)=>a.date<b.date?-1:1);
+  for(const r of iv){const t=Date.parse(r.date);if(t>cur.int)cur.int=t;lastDataAt=Math.max(lastDataAt,t);const d=D.get(r.driver_number);if(d){d.int=r.interval;d.gap=r.gap_to_leader}}
+  po.sort((a,b)=>a.date<b.date?-1:1);
+  for(const r of po){const t=Date.parse(r.date);if(t>cur.pos)cur.pos=t;const d=D.get(r.driver_number);if(d)d.pos=r.position}
+  await pollLaps(false);
+  order=[...D.values()].sort((a,b)=>a.pos-b.pos||a.num-b.num);
+}
+async function pollLaps(full){
+  const ep=epoch;
+  const rows=await api(`/laps?session_key=${K}`+(full?'':`&date_start>${iso(Date.now()-10*60000)}`));
+  if(ep!==epoch)return;
+  for(const r of rows){let m=lapsBy.get(r.driver_number);if(!m)lapsBy.set(r.driver_number,m=new Map());m.set(r.lap_number,r)}
+  globalBest=Infinity;
+  for(const [num,m] of lapsBy){
+    const d=D.get(num);if(!d)continue;
+    let n=0,lastDone=null,best=null;
+    for(const [ln,r] of m){if(ln>n)n=ln;if(r.lap_duration&&(best==null||r.lap_duration<best))best=r.lap_duration}
+    for(let ln=n;ln>=1;ln--){const r=m.get(ln);if(r&&r.lap_duration){lastDone=r.lap_duration;break}}
+    d.lap=n;d.lastLap=lastDone;d.bestLap=best;if(best&&best<globalBest)globalBest=best;
+  }
+}
+let slowFirst=true;
+async function pollSlow(){
+  const ep=epoch;
+  const f=slowFirst;slowFirst=false;
+  const [st,pit,rc,rad,wx,lc,drv]=await Promise.all([
+    api(`/stints?session_key=${K}`),api(`/pit?session_key=${K}`),
+    api(`/race_control?session_key=${K}`+(f?'':`&date>${iso(cur.rc)}`)),
+    api(`/team_radio?session_key=${K}`+(f?'':`&date>${iso(cur.radio)}`)).catch(()=>[]),
+    api(`/weather?session_key=${K}&date>${iso(Date.now()-10*60000)}`).catch(()=>[]),
+    api(`/lap_count?session_key=${K}`).catch(()=>[]),
+    api(`/drivers?session_key=${K}`).catch(()=>[])]);
+  if(ep!==epoch)return;
+  if(lc[0]&&lc[0].total)totalLaps=lc[0].total;if(lc[0]&&lc[0].current)curLap=lc[0].current;
+  for(const x of drv){const d=D.get(x.driver_number);if(d)d.retired=!!x.retired}
+  for(const d of D.values()){d.stints=st.filter(s=>s.driver_number===d.num).sort((a,b)=>a.stint_number-b.stint_number);d.pits=pit.filter(p=>p.driver_number===d.num).length}
+  rc.sort((a,b)=>a.date<b.date?-1:1);
+  for(const r of rc){const t=Date.parse(r.date);if(t>cur.rc)cur.rc=t;addRc(r,!f)}
+  rad.sort((a,b)=>a.date<b.date?-1:1);
+  for(const r of rad){const t=Date.parse(r.date);if(t>cur.radio)cur.radio=t;addRadio(r,!f)}
+  if(wx.length){const w=wx[wx.length-1];$('#wx').textContent=`Air ${w.air_temperature}C  Track ${w.track_temperature}C  Wind ${w.wind_speed}m/s  ${w.rainfall?'Rain':'Dry'}`}
+}
+
+/* ---------- track outline ---------- */
+async function loadOutline(s){ // from a past race at this circuit (OpenF1 history); skipped quietly if unavailable
+  const past=(await api(`/sessions?circuit_key=${s.circuit_key}&session_name=Race`)).filter(x=>x.session_key!==s.session_key&&Date.parse(x.date_end)<Date.now()).sort((a,b)=>a.date_start<b.date_start?1:-1)[0];
+  if(!past)return;
+  const dr=(await api('/drivers?session_key='+past.session_key))[0];if(!dr)return;
+  for(const ln of [3,4,5,6]){
+    const l=(await api(`/laps?session_key=${past.session_key}&driver_number=${dr.driver_number}&lap_number=${ln}`))[0];
+    if(!l||!l.lap_duration||!l.date_start)continue;
+    const a=Date.parse(l.date_start),b=a+l.lap_duration*1000;
+    const loc=await api(`/location?session_key=${past.session_key}&driver_number=${dr.driver_number}&date>=${iso(a)}&date<${iso(b)}`);
+    const pts=loc.filter(p=>p.x||p.y).map(p=>[p.x,p.y]);
+    if(pts.length>100&&!outlineReady){store.set(outKey,pts);drawTrack([pts],true);outlineReady=true;return}
+  }
+}
+function extractLap(t){ // one closed lap out of a longer trail
+  const xs=t.map(p=>p[0]),ys=t.map(p=>p[1]),size=Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys));
+  let far=false;
+  for(let i=1;i<t.length;i++){const d=Math.hypot(t[i][0]-t[0][0],t[i][1]-t[0][1]);if(d>size*.25)far=true;if(far&&d<size*.025&&i>80){const lap=t.slice(0,i+1);if(!lap.some((q,k)=>k&&Math.hypot(q[0]-lap[k-1][0],q[1]-lap[k-1][1])>size*.06))return lap}}
+  return null;
+}
+function tryOutline(){
+  const trails=[...D.values()].map(d=>d.trail).filter(t=>t.length>20);
+  for(const t of trails.sort((a,b)=>b.length-a.length)){
+    const lap=t.length>150?extractLap(t):null;
+    if(lap){outlineReady=true;store.set(outKey,lap);drawTrack([lap],true);return}
+  }
+  const total=trails.reduce((s,t)=>s+t.length,0);
+  if(total-drawnPts>=150){drawnPts=total;drawTrack(trails,false)} // rough shape straight away from every car's recent path
+}
+// pit lane: recorded from cars while they are in it (entry -> exit), the longest clean pass is kept
+function pathLen(a){let s=0;for(let i=1;i<a.length;i++)s+=Math.hypot(a[i][0]-a[i-1][0],a[i][1]-a[i-1][1]);return s}
+// the traced pit lane, team boxes and circuit outline come from the server (traced from F1's recordings)
+async function loadPitLane(tries){
+  const ep=epoch;
+  try{
+    const r=(await api('/pit_lane?session_key='+K))[0];
+    if(ep!==epoch)return;
+    if(r&&((r.lane&&r.lane.length>5)||(r.outline&&r.outline.length>50))){
+      if(r.lane&&r.lane.length>5){pitLane=r.lane;pitBoxes=r.boxes||[]}
+      if(r.outline&&r.outline.length>50){ // a clean, complete circuit from recorded laps: no waiting for cars to trace it
+        store.set(outKey,r.outline);outlineReady=true;drawTrack([r.outline],true);
+      }else redrawTrack();
+      return;
+    }
+  }catch(e){}
+  if(tries<20&&ep===epoch)setTimeout(()=>loadPitLane(tries+1),15000);
+}
+function redrawTrack(){if(lastDraw)drawTrack(lastDraw.lines,lastDraw.closed)}
+function drawTrack(lines,closed){
+  lastDraw={lines,closed};
+  const svg=$('#map');svg.innerHTML='';
+  const all=lines.flat(),xs=all.map(p=>p[0]),ys=all.map(p=>-p[1]);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),w=Math.max(x1-x0,y1-y0),pad=w*.06;
+  const base={x:x0-pad,y:y0-pad,w:x1-x0+2*pad,h:y1-y0+2*pad},baseVb=`${base.x} ${base.y} ${base.w} ${base.h}`;
+  svg.setAttribute('viewBox',baseVb);
+  const jumpMax=w*.06;
+  const d=lines.map(l=>{
+    let out='',prev=null,broken=false;
+    for(const p of l){const far=prev&&Math.hypot(p[0]-prev[0],p[1]-prev[1])>jumpMax;if(far)broken=true;out+=(prev&&!far?'L':'M')+p[0]+' '+(-p[1]);prev=p}
+    const gap=Math.hypot(l[l.length-1][0]-l[0][0],l[l.length-1][1]-l[0][1]);
+    return out+(closed&&!broken&&gap<w*.04?'Z':'');
+  }).join('');
+  const mk=(tag,a)=>{const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);svg.appendChild(e);return e};
+  // pit lane first, so where it meets the track the two merge cleanly; narrower than the track
+  let pitCase=null,pitLine=null,pitIn=null,pitOut=null;
+  if(pitLane&&pitLane.length>5){
+    const pd='M'+pitLane.map(p=>p[0]+' '+(-p[1])).join('L');
+    pitCase=mk('path',{d:pd,fill:'none',stroke:'var(--trk-case)','stroke-width':w*.0105,'stroke-linejoin':'round','stroke-linecap':'round'});
+    pitLine=mk('path',{d:pd,fill:'none',stroke:'var(--trk-line)','stroke-width':w*.0066,'stroke-linejoin':'round','stroke-linecap':'round'});
+    const tag=(p,txt)=>{const t=mk('text',{x:p[0],y:-p[1],'font-size':w*.011,'font-family':'IBM Plex Mono,monospace','font-weight':'600',fill:'var(--mute)'});t.textContent=txt;t.style.pointerEvents='none';return t};
+    pitIn=tag(pitLane[0],'PIT IN');pitOut=tag(pitLane[pitLane.length-1],'PIT OUT');
+  }
+  const boxEls=[];
+  if(pitLane&&pitBoxes.length)for(const b of pitBoxes){
+    const e=mk('rect',{fill:b.color,stroke:'var(--ink)','stroke-linejoin':'round'});e._c=[b.x,-b.y];
+    const tt=document.createElementNS(NS,'title');tt.textContent=b.team+' pit box';e.appendChild(tt);boxEls.push(e);
+  }
+  const sizeBoxes=(zk)=>{const sz=w*.0085*Math.pow(zk,.8);for(const e of boxEls){e.setAttribute('width',sz);e.setAttribute('height',sz);e.setAttribute('x',e._c[0]-sz/2);e.setAttribute('y',e._c[1]-sz/2);e.setAttribute('rx',sz*.2);e.setAttribute('stroke-width',sz*.14)}};
+  sizeBoxes(1);
+  const casing=mk('path',{d,fill:'none',stroke:'var(--trk-case)','stroke-width':w*.018,'stroke-linejoin':'round','stroke-linecap':'round'});
+  const line=mk('path',{d,fill:'none',stroke:'var(--trk-line)','stroke-width':w*.012,'stroke-linejoin':'round','stroke-linecap':'round'});
+  carG=mk('g',{});track={w,base,baseVb,casing,line,pitCase,pitLine,pitIn,pitOut,sizeBoxes};lastVb='';lastZk=-1;
+  for(const dd of D.values())dd.g=null;
+}
+
+/* ---------- timing tower ---------- */
+function buildRows(){
+  const box=$('#rows');box.innerHTML='';box.style.height=D.size*28+'px';
+  for(const d of D.values()){
+    const r=el('div','row');r.innerHTML='<span class="pos"></span><span class="bar"></span><span class="code"></span><span class="gap"></span><span class="ll"></span><span class="tyre"><i class="dot"></i><span></span></span><span class="pits"></span>';
+    r.children[1].style.background=d.color;r.children[2].textContent=d.code;
+    r.onclick=()=>togglePin(d.num);d.row=r;d._c={};box.appendChild(r);
+  }
+}
+function setT(n,k,v,c){if(c[k]!==v){c[k]=v;n.textContent=v}}
+function gapText(d,pos){
+  if(d.retired)return 'OUT';
+  if(pos===1)return 'Leader';
+  const v=gapMode==='int'?d.int:d.gap;
+  if(v==null)return '-';
+  return typeof v==='number'?'+'+v.toFixed(3):String(v);
+}
+function curStint(d){let s=null;for(const x of d.stints){if(x.lap_start<=Math.max(1,d.lap))s=x}return s||d.stints[d.stints.length-1]}
+function renderBoard(){
+  order.forEach((d,i)=>{
+    const r=d.row,c=d._c,y=i*28;
+    if(c.y!==y){c.y=y;r.style.transform=`translateY(${y}px)`}
+    setT(r.children[0],'p',d.pos<99?d.pos:'',c);
+    setT(r.children[3],'g',gapText(d,d.pos),c);
+    const ll=r.children[4];setT(ll,'ll',fmtLap(d.lastLap),c);
+    const cls=!d.retired&&d.lastLap&&d.lastLap<=globalBest+1e-6?'ll p':!d.retired&&d.lastLap&&d.bestLap&&d.lastLap<=d.bestLap+1e-6?'ll g':'ll';if(c.llc!==cls){c.llc=cls;ll.className=cls}
+    const bar=d.retired?d.grey:d.color;if(c.bar!==bar){c.bar=bar;r.children[1].style.background=bar}
+    const st=curStint(d);
+    if(st){const col=d.retired?'#9a9da2':(TYRE[String(st.compound).toUpperCase()]||'#888'),age=(st.tyre_age_at_start||0)+Math.max(0,d.lap-st.lap_start);
+      if(c.col!==col){c.col=col;r.querySelector('.dot').style.background=col}setT(r.children[5].lastChild,'a',age,c)}
+    setT(r.children[6],'n',d.pits,c);
+    const cl='row'+(pins.includes(d.num)?' pin':'')+(d.retired?' out':'');if(c.cl!==cl){c.cl=cl;r.className=cl}
+  });
+}
+
+/* ---------- map: interpolated playback, zoom and follow ---------- */
+const POLL_MS=1500,svgEl=$('#map');
+function renderTime(){return Date.now()-((lagMin==null?4000:lagMin)+POLL_MS+500)}
+let view=null,follow=null,lastVb='',lastZk=-1;   // view: {cx,cy,vw} in map units; null = whole track
+function svgRatio(){const r=svgEl.getBoundingClientRect();return r.width/Math.max(1,r.height)||1}
+function fitVw(){return track?Math.max(track.base.w,track.base.h*svgRatio()):1}
+function ensureView(){if(!view&&track)view={cx:track.base.x+track.base.w/2,cy:track.base.y+track.base.h/2,vw:fitVw()}}
+function zoomAt(f,fx,fy){
+  if(!track)return;ensureView();
+  const ratio=svgRatio(),vh=view.vw/ratio,wx=view.cx+(fx-.5)*view.vw,wy=view.cy+(fy-.5)*vh,fit=fitVw();
+  view.vw=clamp(view.vw/f,fit/30,fit);
+  if(!follow){view.cx=wx-(fx-.5)*view.vw;view.cy=wy-(fy-.5)*(view.vw/ratio)}
+  if(view.vw>=fit*.999&&!follow)view=null;
+}
+function stopFollow(){follow=null;$('#follow').classList.add('hide')}
+function fitView(){view=null;stopFollow()}
+function setFollow(num){
+  const d=D.get(num);if(!d||!track)return;
+  follow=num;ensureView();view.vw=Math.min(view.vw,fitVw()/6);
+  if(d.vx!=null){view.cx=d.vx;view.cy=-d.vy}
+  const c=$('#follow');c.classList.remove('hide');$('#fCode').textContent=d.code;$('#fCode').style.setProperty('--c',d.color);
+  $('#fName').textContent=d.name;
+}
+function updateFollow(){
+  if(follow==null)return;const d=D.get(follow);if(!d)return;const c=d.cd;
+  if(c){$('#fSp').textContent=c.speed;$('#fGr').textContent=c.n_gear===0?'N':c.n_gear;$('#fRpm').textContent=c.rpm;
+    $('#fThr').style.width=clamp(c.throttle,0,100)+'%';$('#fBrk').style.width=(c.brake>0?100:0)+'%'}
+  $('#fSub').textContent=(d.retired?'OUT':'P'+(d.pos<99?d.pos:'-'))+'   last lap '+fmtLap(d.lastLap)+(c&&c.drs>=10?'   DRS':'');
+}
+setInterval(updateFollow,100);
+let lastFrameTs=0;
+function frame(ts){
+  if(ts-lastFrameTs<12){requestAnimationFrame(frame);return}   // ~70 fps at most: a 144 Hz screen would otherwise redraw the whole map twice as often for no visible gain
+  lastFrameTs=ts;
+  if(carG&&track){
+    const rt=renderTime();
+    // current view + zoom factor (zk: 1 = whole track, small = zoomed in)
+    if(view&&follow!=null){const f=D.get(follow);if(f&&f.vx!=null){view.cx+=(f.vx-view.cx)*.35;view.cy+=(-f.vy-view.cy)*.35}}
+    let vb=track.baseVb;
+    if(view){const vh=view.vw/svgRatio();vb=`${(view.cx-view.vw/2).toFixed(1)} ${(view.cy-vh/2).toFixed(1)} ${view.vw.toFixed(1)} ${vh.toFixed(1)}`}
+    if(vb!==lastVb){svgEl.setAttribute('viewBox',vb);lastVb=vb}
+    const zk=view?clamp(view.vw/fitVw(),.03,1):1,mult=Math.pow(zk,.8);
+    if(Math.abs(zk-lastZk)>.002){lastZk=zk;track.casing.setAttribute('stroke-width',track.w*.018*Math.sqrt(zk));track.line.setAttribute('stroke-width',track.w*.012*Math.sqrt(zk));
+      if(track.pitCase){track.pitCase.setAttribute('stroke-width',track.w*.0105*Math.sqrt(zk));track.pitLine.setAttribute('stroke-width',track.w*.0066*Math.sqrt(zk));
+        for(const t of [track.pitIn,track.pitOut])t.setAttribute('font-size',track.w*.011*Math.pow(zk,.8));track.sizeBoxes(zk)}}
+    for(const d of D.values()){
+      const q=d.q;if(!q.length)continue;
+      while(q.length>2&&q[1].t<=rt-2000)q.shift();
+      let x,y;
+      if(rt<=q[0].t){x=q[0].x;y=q[0].y}
+      else if(rt>=q[q.length-1].t){x=q[q.length-1].x;y=q[q.length-1].y}
+      else{let i=0;while(i<q.length-2&&q[i+1].t<rt)i++;const a=q[i],b=q[i+1],f=(rt-a.t)/(b.t-a.t||1);x=a.x+(b.x-a.x)*f;y=a.y+(b.y-a.y)*f}
+      d.vx=x;d.vy=y;
+      if(!d.g){
+        const g=document.createElementNS(NS,'g'),hit=document.createElementNS(NS,'circle'),ring=document.createElementNS(NS,'circle'),dot=document.createElementNS(NS,'circle'),tx=document.createElementNS(NS,'text');
+        hit.setAttribute('fill','transparent');hit.style.pointerEvents='all';
+        ring.setAttribute('fill','none');ring.setAttribute('stroke','var(--ink)');
+        dot.setAttribute('stroke','var(--ink)');
+        tx.textContent=d.code;tx.setAttribute('font-family','IBM Plex Mono,monospace');tx.setAttribute('font-weight','600');tx.style.pointerEvents='none';
+        g.dataset.num=d.num;g.append(hit,ring,dot,tx);carG.appendChild(g);d.g=g;d.hit=hit;d.ring=ring;d.dotEl=dot;d.txEl=tx;d.vk=null;
+      }
+      const out=d.retired,fol=follow===d.num,key=out+'|'+mult.toFixed(3)+'|'+fol;
+      if(d.vk!==key){d.vk=key;
+        const r=track.w*.011*mult*(out?.62:1)*(fol?1.4:1);
+        d.hit.setAttribute('r',r*2.6);
+        d.ring.setAttribute('r',r*1.9);d.ring.setAttribute('stroke-width',r*.45);
+        d.dotEl.setAttribute('r',r);d.dotEl.setAttribute('fill',out?d.grey:d.color);d.dotEl.setAttribute('stroke',out?'#6b6e73':'var(--ink)');d.dotEl.setAttribute('stroke-width',r*.3);
+        d.txEl.setAttribute('x',r*1.4);d.txEl.setAttribute('y',-r*1.1);d.txEl.setAttribute('font-size',r*(fol?1.9:1.5));d.txEl.setAttribute('fill',out?'#7c7f84':'var(--ink)');
+        d.g.style.opacity=out?.9:1;
+      }
+      const lbl=fol&&d.cd?`${d.code}  ${d.cd.speed} km/h`:d.code;if(d.lbl!==lbl){d.lbl=lbl;d.txEl.textContent=lbl}
+      const tf=`translate(${x.toFixed(0)} ${(-y).toFixed(0)})`;if(d.tf!==tf){d.tf=tf;d.g.setAttribute('transform',tf)}
+      const hot=fol||(!out&&pins.includes(d.num)),rd=(fol||(pins.includes(d.num)&&!out))?'block':'none';
+      if(d.rd!==rd){d.rd=rd;d.ring.style.display=rd}
+      if(hot){if(!d.top){d.top=true;carG.appendChild(d.g)}}else d.top=false;   // followed/pinned cars go on top once, not on every frame
+    }
+  }
+  requestAnimationFrame(frame);
+}
+// zoom with the wheel, pan by dragging, click a car to follow it, double-click to show the whole track
+svgEl.addEventListener('wheel',e=>{e.preventDefault();const r=svgEl.getBoundingClientRect();zoomAt(e.deltaY<0?1.25:1/1.25,(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height)},{passive:false});
+svgEl.addEventListener('pointerdown',e=>{
+  if(e.button!==0||!track)return;
+  const sx=e.clientX,sy=e.clientY,g=e.target.closest('g[data-num]');let moved=false,last={x:sx,y:sy};
+  const mv=ev=>{
+    if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<5)return;
+    if(!moved){moved=true;if(follow!=null)stopFollow()}
+    ensureView();const r=svgEl.getBoundingClientRect(),k=view.vw/r.width;
+    view.cx-=(ev.clientX-last.x)*k;view.cy-=(ev.clientY-last.y)*k;last={x:ev.clientX,y:ev.clientY};
+  };
+  const up=()=>{document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);if(!moved&&g)setFollow(+g.dataset.num)};
+  document.addEventListener('pointermove',mv);document.addEventListener('pointerup',up);
+});
+svgEl.addEventListener('dblclick',e=>{if(!e.target.closest('g[data-num]'))fitView()});
+$('#zIn').onclick=()=>zoomAt(1.5,.5,.5);$('#zOut').onclick=()=>zoomAt(1/1.5,.5,.5);$('#zFit').onclick=fitView;$('#fStop').onclick=stopFollow;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')stopFollow()});
+
+/* ---------- tiles: fill the panel, more detail when there is more room ---------- */
+let tileKey='';
+function buildTiles(){
+  const box=$('#tiles');box.innerHTML='';tileKey='';
+  if(!pins.length){const t=el('div','tile empty','Click a driver in the timing tower to pin a live telemetry tile.');t.style.flex='1 1 0';box.appendChild(t);return}
+  for(const num of pins){
+    const d=D.get(num);if(!d)continue;
+    const t=el('div','tile');t.dataset.n=num;
+    t.innerHTML=`<button class="unpin" title="Unpin">x</button>
+      <div class="th"><span class="tc" style="--c:${d.color}">${d.code}</span><span class="tn">${d.name}</span><span class="tp">P<span class="p">-</span></span></div>
+      <div class="big"><b class="sp">0</b><span class="u">km/h</span><span class="g"><span class="gl">GEAR</span> <b class="gr">N</b></span></div>
+      <div class="l1"><div class="bars"><div class="bar2 t"><i></i></div><div class="bar2 b"><i></i></div></div>
+        <div class="meta"><span class="rpm">0 rpm</span><span class="drs">DRS</span><span class="ll">-</span></div></div>
+      <div class="l2"><span class="lbl">Speed, last 60 s</span><canvas class="cs"></canvas></div>
+      <div class="l3"><div><i>Tyre</i><b class="f-tyre">-</b></div><div><i>Stops</i><b class="f-pit">0</b></div><div><i>Best lap</i><b class="f-best">-</b></div>
+        <div><i>Ahead</i><b class="f-ah">-</b></div><div><i>Behind</i><b class="f-bh">-</b></div><div><i>Last lap</i><b class="f-last">-</b></div></div>
+      <div class="l4"><span class="lbl">Speed</span><canvas class="cs2"></canvas><span class="lbl">Throttle</span><canvas class="ct"></canvas><span class="lbl">Brake</span><canvas class="cb"></canvas><div class="laps"></div></div>`;
+    t.querySelector('.unpin').onclick=()=>togglePin(num);box.appendChild(t);
+  }
+  placeTiles(true);
+}
+// choose rows x columns so the tiles fill the panel with sensible proportions, then lay them out in rows
+// pinned drivers in race order: P1 first (top-left), then P2 to its right, and so on; unknown positions last
+function rankedPins(){return pins.slice().sort((a,b)=>{const x=D.get(a),y=D.get(b);return ((x&&x.pos)||99)-((y&&y.pos)||99)||a-b})}
+let tileOrder='';
+function placeTiles(force){
+  const box=$('#tiles'),els=new Map([...box.querySelectorAll('.tile[data-n]')].map(t=>[+t.dataset.n,t]));
+  const tiles=rankedPins().filter(n=>els.has(n)).map(n=>els.get(n));if(!tiles.length)return;
+  tileOrder=tiles.map(t=>t.dataset.n).join();
+  const W=box.clientWidth-16,H=box.clientHeight-16,n=tiles.length;if(W<50||H<50)return;
+  let best=null;
+  for(let r=1;r<=n;r++){const c=Math.ceil(n/r),sc=Math.abs(Math.log(((W-8*(c-1))/c)/((H-8*(r-1))/r)/1.35));if(!best||sc<best.sc)best={r,c,sc}}
+  const key=n+'|'+best.r+'|'+best.c+'|'+tileOrder;if(!force&&key===tileKey)return;tileKey=key;
+  box.querySelectorAll('.trow').forEach(r=>r.remove());
+  const per=[];let left=n;for(let r=best.r;r>=1;r--){const m=Math.ceil(left/r);per.push(m);left-=m}
+  let i=0;for(const m of per){const row=el('div','trow');for(let j=0;j<m;j++)row.appendChild(tiles[i++]);box.appendChild(row)}
+}
+function togglePin(num){
+  const i=pins.indexOf(num);if(i>=0)pins.splice(i,1);else if(pins.length<8)pins.push(num);else{const n=$('#sessName'),o=n.textContent,m='You can pin up to 8 drivers';n.textContent=m;setTimeout(()=>{if(n.textContent===m)n.textContent=o},2500);return}
+  store.set('pp_pins',pins);buildTiles();
+}
+const gapTxt=v=>v==null?'-':typeof v==='number'?'+'+v.toFixed(1):String(v);
+function trace(cv,pts,color,max,fill){
+  if(!cv||!cv.clientHeight)return;const dpr=window.devicePixelRatio||1,W=cv.clientWidth*dpr,H=cv.clientHeight*dpr;
+  if(cv.width!==Math.round(W)||cv.height!==Math.round(H)){cv.width=Math.round(W);cv.height=Math.round(H)}
+  const g=cv.getContext('2d');g.clearRect(0,0,W,H);
+  g.strokeStyle=getComputedStyle(document.body).getPropertyValue('--line');g.lineWidth=1;g.beginPath();g.moveTo(0,H-1);g.lineTo(W,H-1);g.moveTo(0,H/2);g.lineTo(W,H/2);g.stroke();
+  const now=Date.now(),xy=[];
+  for(const [ts,v] of pts){const x=W-(now-ts)/60000*W;if(x>=0)xy.push([x,H-(v/max)*(H-2)-1])}
+  if(xy.length<2)return;
+  g.beginPath();xy.forEach((p,k)=>k?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.strokeStyle=color;g.lineWidth=2*dpr;g.stroke();
+  if(fill){g.lineTo(xy[xy.length-1][0],H);g.lineTo(xy[0][0],H);g.closePath();g.globalAlpha=.22;g.fillStyle=color;g.fill();g.globalAlpha=1}
+}
+function renderTiles(){
+  if(rankedPins().filter(n=>D.has(n)).join()!==tileOrder&&document.querySelector('.tile[data-n]'))placeTiles(true); // positions changed: re-rank
+  document.querySelectorAll('.tile[data-n]').forEach(t=>{
+    const d=D.get(+t.dataset.n),c=d.cd;if(!c)return;
+    const q=s=>t.querySelector(s),idx=order.indexOf(d),ah=order[idx-1],bh=order[idx+1];
+    q('.p').textContent=d.pos<99?d.pos:'-';
+    q('.sp').textContent=c.speed;q('.gr').textContent=c.n_gear===0?'N':c.n_gear;
+    q('.t i').style.width=clamp(c.throttle,0,100)+'%';q('.b i').style.width=(c.brake>0?100:0)+'%';
+    q('.rpm').textContent=c.rpm+' rpm';q('.drs').classList.toggle('on',c.drs>=10);q('.ll').textContent=fmtLap(d.lastLap);
+    if(q('.l3').offsetParent){
+      const st=curStint(d);
+      q('.f-tyre').textContent=st?`${String(st.compound||'?')[0]} ${(st.tyre_age_at_start||0)+Math.max(0,d.lap-st.lap_start)}L`:'-';
+      q('.f-pit').textContent=d.pits;q('.f-best').textContent=fmtLap(d.bestLap);q('.f-last').textContent=fmtLap(d.lastLap);
+      q('.f-ah').textContent=ah?`${ah.code} ${gapTxt(d.int)}`:'Leader';q('.f-bh').textContent=bh?`${bh.code} ${gapTxt(bh.int)}`:'-';
+    }
+    const col=d.retired?d.grey:d.color;
+    if(q('.l2').offsetParent)trace(q('.cs'),d.hist.map(h=>[h[0],h[1]]),col,350,true);
+    if(q('.l4').offsetParent){
+      trace(q('.cs2'),d.hist.map(h=>[h[0],h[1]]),col,350,true);trace(q('.ct'),d.hist.map(h=>[h[0],h[2]||0]),'#3fa65a',100,true);trace(q('.cb'),d.hist.map(h=>[h[0],h[3]>0?100:0]),'#e0483f',100,true);
+      const m=lapsBy.get(d.num),arr=[];if(m)for(const [ln,r] of m)if(r.lap_duration)arr.push([ln,r.lap_duration]);
+      q('.laps').textContent=arr.slice(-5).reverse().map(a=>'L'+a[0]+' '+fmtLap(a[1])).join('   ');
+    }
+  });
+}
+new ResizeObserver(()=>placeTiles(false)).observe($('#tiles'));
+
+/* ---------- feeds ---------- */
+function flagColor(r){
+  const f=String(r.flag||'').toUpperCase(),m=String(r.message||'').toUpperCase();
+  if(/SAFETY CAR|VSC|VIRTUAL/.test(m))return '#f2c230';
+  return ({GREEN:'#3fa65a',CLEAR:'#3fa65a',YELLOW:'#f2c230','DOUBLE YELLOW':'#f2c230',RED:'#e0483f',BLUE:'#3a7bd5',CHEQUERED:'#f4f4f0'})[f]||'#777';
+}
+function updateTrackState(r){
+  const m=String(r.message||'').toUpperCase(),f=String(r.flag||'').toUpperCase();
+  let t=null;
+  if(/VIRTUAL SAFETY CAR/.test(m)&&!/ENDING/.test(m))t='VSC';
+  else if(/SAFETY CAR/.test(m)&&!/IN THIS LAP|ENDING|VIRTUAL/.test(m))t='SAFETY CAR';
+  else if(f==='RED')t='RED FLAG';
+  else if(f==='CHEQUERED')t='CHEQUERED';
+  else if((r.scope==='Track'&&(f==='GREEN'||f==='CLEAR'))||/ENDING|IN THIS LAP/.test(m))t='TRACK CLEAR';
+  if(t){const col=t==='TRACK CLEAR'?'#3fa65a':t==='RED FLAG'?'#e0483f':t==='CHEQUERED'?'#f4f4f0':'#f2c230';$('#trackTxt').textContent=t;$('#trackSw').style.background=col}
+}
+function addRc(r,animate){
+  updateTrackState(r);
+  const box=$('#rcList');if(box.querySelector('.note'))box.innerHTML='';
+  const it=el('div','item'+(animate?' new':''));
+  it.append(el('div','tm',clk(Date.parse(r.orig||r.date))));
+  const b=el('div');const sw=el('i','sw');sw.style.background=flagColor(r);b.append(sw,document.createTextNode((r.lap_number?'L'+r.lap_number+'  ':'')+r.message));
+  it.append(b);box.prepend(it);while(box.children.length>80)box.lastChild.remove();
+}
+const audioQ=[];let playing=false;
+function playNext(){if(playing||!audioQ.length)return;playing=true;const a=new Audio(audioQ.shift());try{a.playbackRate=REPLAY.active?Math.min(4,REPLAY.speed):1}catch{}const done=()=>{playing=false;playNext()};a.onended=a.onerror=done;a.play().catch(done)}
+function addRadio(r,animate){
+  const d=D.get(r.driver_number);if(!d)return;
+  const box=$('#radioList');if(box.querySelector('.note'))box.innerHTML='';
+  const it=el('div','item'+(animate?' new':'')+(pins.includes(d.num)?' pinned':''));
+  it.append(el('div','tm',clk(Date.parse(r.orig||r.date))));
+  const b=el('div'),c=el('span','c',d.code);c.style.setProperty('--c',d.color);
+  const btn=el('button','','Play');btn.onclick=()=>{audioQ.push(r.recording_url);playNext()};
+  b.append(c,document.createTextNode(d.name),btn);it.append(b);box.prepend(it);while(box.children.length>60)box.lastChild.remove();
+  if(animate&&auto&&pins.includes(d.num)){audioQ.push(r.recording_url);playNext()}
+}
+
+/* ---------- status + init ---------- */
+function updateStatus(){
+  if(!S)return;
+  const ml=curLap||Math.max(0,...[...D.values()].map(d=>d.lap));if(ml)$('#lapNo').textContent='Lap '+ml+(totalLaps?' / '+totalLaps:'');
+  if(REPLAY.active&&REPLAY.ready){setStatus(REPLAY.pos>=REPLAY.end-500?'REPLAY  end of recording':'REPLAY  '+REPLAY.speed+'x'+(REPLAY.playing?'':'  paused'),'warn');return}
+  const age=lastDataAt?Math.round((Date.now()-lastDataAt)/1000):null;
+  if(errCount>2)setStatus('RECONNECTING','warn');
+  else if(age==null)setStatus('WAITING FOR DATA','warn');
+  else if(age>30)setStatus(`DATA ${age}s OLD`,'warn');
+  else setStatus(`LIVE  ${((Date.now()-renderTime())/1000).toFixed(0)}s behind`,'live');
+}
+setInterval(()=>{if(!S)return;renderBoard();renderTiles();updateStatus();
+  const noPos=CFG.f1feed&&!CFG.token&&![...D.values()].some(d=>d.q.length);
+  let n=$('#posNote');if(noPos&&!n){n=el('div','note','Car positions and telemetry need your F1 TV token (F1 only sends them to subscribers). See the README.');n.id='posNote';ws.querySelector('[data-id=map] .pb').append(n)}else if(!noPos&&n)n.remove()},300);
+/* ---------- replay of recorded sessions ---------- */
+const REPLAY={active:false,ready:false,speed:1,playing:true};
+const RATES=[0.25,0.5,1,2,4,8,16,32];
+const hms=ms=>{ms=Math.max(0,Math.round(ms/1000));return Math.floor(ms/3600)+':'+String(Math.floor(ms/60)%60).padStart(2,'0')+':'+String(ms%60).padStart(2,'0')};
+const jget=async p=>(await fetch(p)).json();
+// throw away the loaded data and start over on the current source (live or replay); panels and F1 TV boxes stay as they are
+function resetClient(){
+  epoch++;S=null;K=null;D.clear();order=[];lapsBy.clear();globalBest=Infinity;lastDataAt=0;errCount=0;totalLaps=0;curLap=0;lagMin=null;
+  Object.assign(cur,{loc:0,cd:0,int:0,pos:0,rc:0,radio:0});slowFirst=true;
+  track=null;carG=null;outlineReady=false;drawnPts=0;pitLane=null;pitBest=0;lastDraw=null;pitBoxes=[];
+  view=null;follow=null;lastVb='';lastZk=-1;tileKey='';tileOrder='';audioQ.length=0;
+  $('#follow').classList.add('hide');
+  for(const [sel,txt] of [['#rcList','Waiting for messages.'],['#radioList','Waiting for radio.']])$(sel).innerHTML=`<div class="note">${txt}</div>`;
+  $('#rows').innerHTML='';$('#tiles').innerHTML='';$('#map').innerHTML='';$('#trackTxt').textContent='';$('#lapNo').textContent='';$('#wx').textContent='';$('#trackSw').style.background='#777';
+  setStatus('CONNECTING','warn');
+}
+async function reloadData(){resetClient();await findLive()}
+// after a jump in the replay: forget what was read (cars, laps, messages) but keep the circuit, tower and tiles, so nothing blanks
+async function reseek(){
+  if(!S)return reloadData();
+  epoch++;const ep=epoch;
+  for(const d of D.values()){d.q=[];d.trail=[];d.hist=[];d.cd=null;d.int=null;d.gap=null;d.vx=null;d.vy=null}
+  lapsBy.clear();globalBest=Infinity;lastDataAt=0;errCount=0;lagMin=null;curLap=0;audioQ.length=0;
+  const t=Date.now();Object.assign(cur,{loc:t-150000,cd:t-20000,int:t-90000,pos:0,rc:0,radio:0});slowFirst=true;
+  for(const [sel,txt] of [['#rcList','Waiting for messages.'],['#radioList','Waiting for radio.']])$(sel).innerHTML=`<div class="note">${txt}</div>`;
+  $('#trackTxt').textContent='';
+  await Promise.all([pollLaps(true),pollSlow(),pollMid()]).catch(()=>{});
+  if(ep!==epoch)return;
+  loop(pollFast,1500);loop(pollMid,4000);loop(pollSlow,15000);
+}
+let rpMeetings=[],rpDrag=false,rpWasOn=false,rpBusy=false,rpCancelled=false;
+function rpOpt(sel,items,ph){sel.innerHTML='';const o=el('option','',ph);o.value='';sel.append(o);items.forEach(([v,t])=>{const e=el('option','',t);e.value=v;sel.append(e)})}
+function openReplay(){
+  const y=$('#rpYear'),now=new Date().getFullYear();
+  if(!y.options.length){const items=[];for(let k=now;k>=2018;k--)if(k!==2022)items.push([k,String(k)]);rpOpt(y,items,'Choose a year')}
+  $('#rpMsg').textContent='';$('#replayModal').classList.add('show');
+}
+async function rpYear(){
+  const y=$('#rpYear').value,t=$('#rpTrack'),s=$('#rpSess');
+  rpOpt(s,[],'Choose a track first');s.disabled=true;$('#rpStart').disabled=true;
+  if(!y){rpOpt(t,[],'Choose a year first');t.disabled=true;return}
+  $('#rpMsg').textContent='Loading the '+y+' calendar from F1...';t.disabled=true;
+  const r=await jget('/replay/index?year='+y).catch(()=>({error:'Could not reach the server'}));
+  if(r.error){rpOpt(t,[],'Nothing available');$('#rpMsg').textContent=r.error;return}
+  rpMeetings=r;rpOpt(t,r.map((m,i)=>[i,`${m.name}${m.country?'  ('+m.country+')':''}`]),'Choose a track');t.disabled=false;$('#rpMsg').textContent='';
+}
+function rpTrack(){
+  const i=$('#rpTrack').value,s=$('#rpSess');$('#rpStart').disabled=true;
+  if(i===''){rpOpt(s,[],'Choose a track first');s.disabled=true;return}
+  rpOpt(s,rpMeetings[+i].sessions.map((x,k)=>[k,`${x.name}   (${x.start.slice(0,10)})`]),'Choose a session');s.disabled=false;
+}
+async function rpStart(){
+  const m=rpMeetings[+$('#rpTrack').value],x=m&&m.sessions[+$('#rpSess').value];if(!x)return;
+  $('#rpStart').disabled=true;$('#rpMsg').textContent='Starting...';rpBusy=true;rpCancelled=false;
+  const q=`/replay/load?path=${encodeURIComponent(x.path)}&year=${$('#rpYear').value}&meeting=${encodeURIComponent(m.name)}&session=${encodeURIComponent(x.name)}&official=${encodeURIComponent(m.official||'')}&country=${encodeURIComponent(m.country||'')}&location=${encodeURIComponent(m.location||'')}`;
+  let st;
+  try{
+    st=await jget(q);
+    while(!st.ready&&!st.error&&!rpCancelled){await new Promise(r=>setTimeout(r,700));st=await jget('/replay/status');if(!st.active){st={error:'The replay was stopped'};break}$('#rpMsg').textContent=st.progress||'Loading...'}
+  }catch(e){st={error:'Lost contact with the server ('+(e.message||e)+'). Is it still running?'}}
+  rpBusy=false;
+  if(rpCancelled){$('#rpStart').disabled=false;return}
+  if(st.error){$('#rpMsg').textContent=st.error;$('#rpStart').disabled=false;return}
+  $('#replayModal').classList.remove('show');
+  await rpTick();await reloadData();sendTvToReplay(st.meta);
+}
+// F1 TV: follow the same route you would by hand: Archive > season > race weekend > session, then play it.
+// The three scripts below run inside the F1 TV page and return the address of the next page.
+const F1TV='https://f1tv.formula1.com';
+// These three run inside the F1 TV page (they are copied there as text, so they must not use anything from this file).
+function findSeason(y){
+  for(const a of document.querySelectorAll('a[href*="/page/"]'))if((a.innerText||'').trim().toLowerCase().startsWith(y))return a.getAttribute('href');
+  return null;
+}
+function findMeeting(T,C,D){ // T: words from the race's names, C: country / location, D: the race date {d,mon} (cards show their weekend dates)
+  const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();
+  const dre=D?new RegExp('(^|[^0-9])'+D.d+' ?'+D.mon+'\\b'):null;
+  let best=null,bs=0,bm=0,bst=false,bd=false;
+  for(const a of document.querySelectorAll('a[href^="/page/"]')){
+    const x=norm(a.innerText),dt=!!dre&&dre.test(x.replace(/\s+/g,' '));
+    if(!dt&&!/ROUND|GRAND PRIX|GRAN PREMIO|GRANDE PREMIO|PREMIO|PRIX|PREIS|NAGYD|TESTING/.test(x))continue;   // (local-language names: "Grosser Preis von Osterreich", "Magyar Nagydij")
+    let m=0;for(const w of T)if(x.includes(w))m++;
+    const st=C.some(c=>x.startsWith(c)),sc=m+(st?3:0)+(dt?100:0);
+    if(sc>bs){bs=sc;best=a;bm=m;bst=st;bd=dt}
+  }
+  if(best&&bd)return best.getAttribute('href');             // the card's weekend dates include the race day: that is the race
+  const more=[...document.querySelectorAll('button,a,div[role=button]')].find(b=>/^\s*view more\s*$/i.test(b.innerText||''));
+  if(more){more.click();return null}                         // the season page loads more races on demand: look there first (shared country or sponsor words must not win)
+  if(best&&bm>=1&&(bm>=2||bst))return best.getAttribute('href');
+  return null;
+}
+// Label styles: recent weekends list "F1 Race" (2024 on: "F1 Race Replay"), "F1 Qualifying"...; older ones "2021 Abu Dhabi GP - Qualifying 01:24:07 | Replay"
+// (and the race is just "2021 Abu Dhabi Grand Prix 02:18:27 | Replay"; only labels of the wanted year count, because "more like this" rows hold other years' races). Support races (F2, F3, Porsche...) and shows are skipped.
+function findSession(S,Y){
+  const clean=s=>String(s||'').trim().replace(/\s+/g,' ').toLowerCase();
+  const bad=/\b(f2|f3|psc|porsche|academy|supercup|kids|show|highlights|preview|review|press|recap|analysis|documentary|onboard|reaction|warm-up|weekend)\b|pre-|post-/;
+  const all=[...document.querySelectorAll('a[href*="/detail/"]')].map(a=>({t:clean(a.innerText),h:a.getAttribute('href')}));
+  for(const x of all){const m=/^((?:f1 )+)(.*)$/.exec(x.t);if(m&&(m[2]===S||m[2]===S+' replay'))return x.h}
+  let pt=null,pd=0;   // plain "Race 02:30:37 | Replay" tiles (some weekends have no "F1" prefix): the longest one is the F1 session, F2/F3 are shorter
+  for(const x of all){const m=/^(.*?) (\d\d):(\d\d):(\d\d) \| replay/.exec(x.t),hy=/\/(\d{4})-/.exec(x.h);
+    if(m&&m[1]===S&&!(Y&&hy&&hy[1]!==Y)){const d=+m[2]*3600+ +m[3]*60+ +m[4];if(d>pd){pd=d;pt=x.h}}}
+  if(pt)return pt;
+  const old=x=>{
+    const t=x.t;if(!/^\d{4} /.test(t)||bad.test(t)||(Y&&!t.startsWith(Y+' ')))return false;let m;
+    if(m=S.match(/^practice (\d)$/))return t.includes('practice '+m[1])||t.includes('practice'+m[1])||new RegExp('\\bfp'+m[1]+'\\b').test(t);
+    if(S==='practice')return / - practice(?= \d\d:\d\d|$)/.test(t);   // a weekend with a single practice session (2020 Imola)
+    if(S==='qualifying')return /\bqualifying\b/.test(t)&&!/sprint/.test(t);
+    if(/^sprint (qualifying|shootout)$/.test(S))return /sprint (qualifying|shootout)/.test(t)||(Y==='2021'&&/\bsprint\b/.test(t));
+    if(S==='sprint')return /\bsprint\b/.test(t)&&!/qualifying|shootout/.test(t);
+    if(S==='race')return /\b(grand prix|gp)\b/.test(t)&&!/ - /.test(t);
+    return false;
+  };
+  for(const x of all)if(old(x))return x.h;
+  return null;
+}
+function f1tvScripts(t){
+  const GENERIC=new Set('FORMULA ONE FIA WORLD CHAMPIONSHIP GRAND PRIX GRAN PREMIO THE DEL DES LOS LAS AND'.split(' '));
+  const norm=x=>String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();
+  const tokens=[...new Set([t.official,t.meeting,t.country,t.location].flatMap(x=>norm(x).split(/[^A-Z0-9]+/)).filter(w=>w.length>=3&&!/^\d+$/.test(w)&&!GENERIC.has(w)))];
+  const C=[norm(t.country),norm(t.location)].filter(Boolean);
+  const dm=/(\d{4})-(\d{2})-(\d{2})/.exec(String(t.path||'').split('/')[1]||'');
+  const D=dm?{d:+dm[3],mon:['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][+dm[2]-1]}:null;
+  const wrap=(fn,...args)=>`(${fn.toString()})(${args.map(a=>JSON.stringify(a)).join(',')})`;
+  return {season:wrap(findSeason,t.year+' season'),meeting:wrap(findMeeting,tokens,C,D),session:wrap(findSession,String(t.session||'').toLowerCase(),String(t.year||'')),tokens};
+}
+// Every F1 TV box goes to the replay's video: the first one browses the Archive (year > weekend > session), the others
+// open the page it ended on. Boxes added later, in the middle of the replay, are sent the same way.
+const REPLAY_TV={meta:null,url:null,first:null,owner:null};
+const tvIds=()=>Object.keys(L).filter(k=>k.startsWith('tv'));
+const nap=ms=>new Promise(r=>setTimeout(r,ms));
+async function tvWebview(id){let wv=tvViews[id];for(let i=0;i<60&&(!wv||!wv._ready);i++){await nap(300);wv=tvViews[id]}return wv&&wv._ready?wv:null}
+async function resolveReplayVideo(wv,meta,say){
+  const abs=h=>new URL(h,F1TV).href;
+  const load=url=>new Promise(res=>{const d=()=>{wv.removeEventListener('did-finish-load',d);res()};wv.addEventListener('did-finish-load',d);wv.loadURL(url);setTimeout(res,15000)});
+  const wait=async(script,tries)=>{for(let i=0;i<tries;i++){try{const r=await wv.executeJavaScript(script);if(r)return r}catch(e){}await nap(900)}return null};
+  const S=f1tvScripts(meta),tag=`${meta.year} > ${meta.meeting} > ${meta.session}`;
+  try{
+    say('F1 TV: opening the Archive...');await load(F1TV+'/page/493/archive');
+    const season=await wait(S.season,25);if(!season){say('F1 TV: could not find the '+meta.year+' season in the Archive');return null}
+    say('F1 TV: '+meta.year+' season...');await load(abs(season));
+    const weekend=await wait(S.meeting,40);if(!weekend){say('F1 TV: could not find '+meta.meeting+' in the '+meta.year+' season');return null}
+    say('F1 TV: '+meta.meeting+'...');await load(abs(weekend));
+    const detail=await wait(S.session,25);if(!detail){say('F1 TV: opened '+meta.meeting+'; pick the '+meta.session+' there');return null}
+    say('F1 TV: '+tag);await wv.loadURL(abs(detail));
+    setTimeout(()=>{if($('#rpTvMsg').textContent==='F1 TV: '+tag)say('')},8000);
+    return abs(detail);
+  }catch(e){say('F1 TV: could not open the session ('+(e.message||e)+')');return null}
+}
+async function sendTvToReplay(meta,only){
+  const say=x=>{$('#rpTvMsg').textContent=x};
+  $('#rpFind').href=F1TV+'/page/493/archive';
+  if(!DESKTOP){say('');return}
+  if(!only){REPLAY_TV.meta=meta;REPLAY_TV.url=null;REPLAY_TV.first=null;REPLAY_TV.owner=null;if(!tvIds().length)addTv()}
+  else if(REPLAY_TV.meta!==meta)return;
+  const open=async id=>{
+    const wv=await tvWebview(id);if(!wv||REPLAY_TV.meta!==meta||wv._replayFor===meta)return;
+    wv._replayFor=meta;
+    const quiet=()=>{if(SETTINGS.muteExtra===false)return;try{wv.setAudioMuted(true);const b=document.querySelector('.panel[data-id="'+id+'"] [data-a=mute]');if(b)b.textContent='Unmute'}catch{}};
+    if(REPLAY_TV.url){try{wv.loadURL(REPLAY_TV.url);quiet()}catch{}return}
+    if(!REPLAY_TV.first){REPLAY_TV.owner=wv;REPLAY_TV.first=resolveReplayVideo(wv,meta,say).then(u=>{if(REPLAY_TV.meta===meta){REPLAY_TV.url=u;if(!u)REPLAY_TV.first=null}return u});await REPLAY_TV.first;return}
+    const u=await REPLAY_TV.first;
+    if(u&&REPLAY_TV.meta===meta&&wv!==REPLAY_TV.owner){try{wv.loadURL(u);quiet()}catch{}}
+  };
+  await Promise.all((only?[only]:tvIds()).map(open));
+}
+/* ---------- video <-> data sync ----------
+   F1 TV's player (Bitmovin) does not give the page the video's original clock, and the <video> element's currentTime is not
+   the position (it just keeps counting), so we read the player's own time label, seek by clicking its seek bar and play/pause
+   with its own button (the element's play() and pause() are ignored).
+   You line the two up once: put the video on the start (lights out) and press "Sync at lights out", or line them up anywhere and
+   press "Sync video". That gives an offset: video time = offset + seconds into the data. After that the data bar drives the
+   video, and pausing, playing or scrubbing in the player drives the data. The offset is remembered per session. */
+const LINK={on:false,off:0,key:'',quiet:0,busy:false,mis:0,approx:false,seeded:true,meta:null};
+const vidFind='const v=[...document.querySelectorAll("video")].sort((a,b)=>b.videoWidth*b.videoHeight-a.videoWidth*a.videoHeight)[0];';
+const vidRead=`const hm=s=>{const m=/(\\d+):(\\d+):(\\d+)/.exec(s||'');return m?+m[1]*3600+ +m[2]*60+ +m[3]:null};const la=document.querySelector('.tm-ui-playbacktimelabel'),lb=document.querySelector('.tm-ui-playbacktimelabel.tm-text-right');const lt=la?hm(la.textContent):null,tot=lb?hm(lb.textContent):null;`;
+const vidRel=()=>(REPLAY.pos-REPLAY.start)/1000;
+// the box the replay follows first (settings), then the others
+const vidOrder=()=>{const ks=Object.keys(tvViews),r=SETTINGS.ref?'tv'+SETTINGS.ref:null;return r&&ks.includes(r)?[r,...ks.filter(k=>k!==r)]:ks};
+async function vidRun(code,all){
+  let got=null;
+  for(const k of vidOrder()){const w=tvViews[k];if(!w||!w.isConnected)continue;
+    try{const r=await Promise.race([w.executeJavaScript(`(async()=>{${vidFind}if(!v||!v.videoWidth)return null;${vidRead}${code}})()`,true),new Promise((_,no)=>setTimeout(()=>no(new Error('F1 TV box did not answer')),9000))]);if(r){got=got||r;if(!all)return r}}catch{}}   // a stuck box must never freeze the sync
+  return got;
+}
+const vidState=()=>vidRun('return {t:lt!=null?lt:v.currentTime,p:v.paused,r:v.playbackRate,total:tot}');
+// o: {t: position in seconds, paused, r: rate}. Seeks with the player's own seek bar (the element's currentTime only reaches what is buffered).
+const vidSet=o=>vidRun(`const o=${JSON.stringify(o)};
+  if(o.t!=null&&isFinite(o.t)){
+    const want=Math.max(0,tot?Math.min(tot-2,o.t):o.t);
+    if(lt==null||tot==null)v.currentTime=want;
+    else if(Math.abs(want-lt)>1.5){
+      const bar=document.querySelector('.tm-ui-seekbar .tm-seekbar')||document.querySelector('.tm-ui-seekbar');
+      if(bar){
+        const r=bar.getBoundingClientRect(),x=r.left+want/tot*r.width,y=r.top+r.height/2;
+        for(const t of ['mouseover','mousemove','mousedown','mouseup','click'])bar.dispatchEvent(new MouseEvent(t,{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window,button:0,buttons:t==='mousedown'?1:0}));
+        await new Promise(r=>setTimeout(r,1500));
+      }
+    }
+  }
+  if(o.r)v.playbackRate=o.r;
+  if(o.paused!=null&&v.paused!==o.paused){const b=document.querySelector('button.tm-ui-playbacktogglebutton');if(b)b.click();else if(o.paused)v.pause();else v.play().catch(()=>{})}
+  return true`,true);
+function syncUi(msg){
+  const on=LINK.on;$('#rpSync').textContent=on?'Synced (unlink)':'Sync video';$('#rpSync').classList.toggle('on',on);
+  document.querySelectorAll('.nudge').forEach(b=>b.hidden=!on);if(msg!=null){$('#rpSyncMsg').textContent=msg;if(msg)LINK.msgUntil=Date.now()+15000}   // a message stays readable for 15 s
+}
+function linkSave(){
+  LINK.approx=false;
+  try{localStorage.setItem(LINK.key,String(LINK.off));
+    const m=LINK.meta;if(m&&REPLAY.started!=null)localStorage.setItem('pp_lo_'+m.year+'_'+m.session,String(LINK.off+(REPLAY.started-REPLAY.start)/1000))}catch{}
+}
+// data bar -> video. One push at a time: a newer request while one is running makes it go round again with the latest position,
+// so two quick skips never fight over the player and the last one wins.
+let pushBusy=false,pushAgain=false,userSeq=0;   // userSeq counts your own requests (skips, speed, play...) the moment they are made
+async function linkPush(){
+  if(pushBusy){pushAgain=true;return}
+  pushBusy=true;
+  try{do{pushAgain=false;await linkPushOnce()}while(pushAgain)}finally{pushBusy=false}
+}
+async function linkPushOnce(){
+  if(!LINK.on||!REPLAY.ready)return;LINK.quiet=Date.now()+9000;
+  const seq=userSeq;
+  const want=LINK.off+vidRel();
+  let v=null;
+  for(let k=0;k<3;k++){   // a seek click can be lost (e.g. while the player is still busy with the last one): if the video is nowhere near, try again
+    const ok=await vidSet({t:want,paused:!REPLAY.playing,r:Math.min(16,REPLAY.speed)});
+    if(!ok){syncUi('Open the session video in the F1 TV box and press play');return}
+    await nap(400);v=await vidState();
+    if(pushAgain||seq!==userSeq||!v||Math.abs(v.t-want)<=40)break;
+  }
+  if(pushAgain||seq!==userSeq)return;   // a newer request has been made: it will be pushed next, do not pull the data back to this older target
+  // the player's seek bar lands on whole steps (up to ~15 s), so the video is the reference: move the data to where it landed
+  if(v&&Math.abs(v.t-want)>2){
+    const pos=Math.max(REPLAY.start,Math.min(REPLAY.end,(v.t-LINK.off)*1000+REPLAY.start));
+    await rpControl('pos='+Math.round(pos),true,true);
+  }
+  LINK.quiet=Date.now()+2500;
+}
+// line up at the current moment of both
+async function linkLock(){
+  if(LINK.on){LINK.on=false;syncUi('');return}
+  const v=await vidState();
+  if(!v){syncUi('Open the session video in the F1 TV box and press play first');return}
+  LINK.off=v.t-vidRel();LINK.on=true;LINK.quiet=Date.now()+2000;linkSave();syncUi('Synced. Play, pause and skipping now move both.');
+}
+// the video is on the start of the session (lights out): move the data to the start too and link them
+async function linkLights(){
+  if(REPLAY.started==null){syncUi('This recording has no start marker. Line both up by hand and press Sync video');return}
+  const v=await vidState();
+  if(!v){syncUi('Open the session video in the F1 TV box and press play first');return}
+  LINK.off=v.t-(REPLAY.started-REPLAY.start)/1000;LINK.on=true;LINK.quiet=Date.now()+4000;linkSave();
+  await rpControl('pos='+Math.round(REPLAY.started),true,true);
+  syncUi('Synced at the start. Play, pause and skipping now move both.');
+}
+// the broadcast's lap counter just flipped to lap n: the recording knows when the leader started that lap
+// the exact calibration: you pressed as the broadcast counter flipped to lap n, so this video moment is the start of lap n.
+// The data jumps there and the two are linked; the video is not moved.
+async function linkFlip(){
+  const n=parseInt($('#rpLap').value,10);
+  if(!(n>=1)){syncUi('Type the lap number the broadcast just flipped to');return}
+  const v=await vidState();
+  if(!v){syncUi('Open the session video in the F1 TV box and press play first');return}
+  let t=null;try{t=(await jget('/replay/lap?n='+n)).t}catch{}
+  if(t==null){syncUi('This recording has no lap '+n+' marker (practice and qualifying have no lap counter). Use Sync at lights out or Sync video');return}
+  LINK.off=v.t-(t-REPLAY.start)/1000;LINK.on=true;LINK.quiet=Date.now()+4000;linkSave();
+  await rpControl('pos='+Math.round(t),true,true);
+  syncUi('Synced at the flip to lap '+n+': the data moved to the start of the lap, the video stayed. If you pressed a little late the data is early: use Data +10s / +1s until the two agree.');
+}
+// Sync at lap: take BOTH the data and the video to the start of lap n.
+// If the current sync already puts the video inside lap n, the video is moved to the data's lap start (using that sync).
+// If it does not (the sync was wrong about the lap), the video is what you are looking at, so the data is moved to it instead.
+async function linkLap(){
+  const n=parseInt($('#rpLap').value,10);
+  if(!(n>=1)){syncUi('Type the lap number the broadcast shows');return}
+  const v=await vidState();
+  if(!v){syncUi('Open the session video in the F1 TV box and press play first');return}
+  let t=null,t2=null;try{t=(await jget('/replay/lap?n='+n)).t;t2=(await jget('/replay/lap?n='+(n+1))).t}catch{}
+  if(t==null){syncUi('This recording has no lap '+n+' marker (practice and qualifying have no lap counter). Use Sync at lights out or Sync video');return}
+  const est=LINK.on?(v.t-LINK.off)*1000+REPLAY.start:null;             // where the current sync thinks the video is, in data time
+  const inLap=est!=null&&est>=t-3000&&(t2==null||est<t2+3000);
+  if(inLap){
+    await rpControl('pos='+Math.round(t),true);                          // data to the lap start, then the video follows it
+    syncUi('Moved the data and the video to the start of lap '+n+'. If the broadcast counter does not show lap '+n+' just flipped, press Flip! at the exact flip, or nudge with Data +/-.');
+  }else{
+    LINK.off=v.t-(t-REPLAY.start)/1000;LINK.on=true;LINK.quiet=Date.now()+4000;linkSave();
+    await rpControl('pos='+Math.round(t),true,true);
+    syncUi('The sync was not on lap '+n+', so it re-synced to your video: the data moved to the start of lap '+n+'. For an exact match press Flip! at the moment the counter flips, or nudge with Data +/-.');
+  }
+}
+async function linkNudge(d){
+  if(!LINK.on)return;LINK.off-=d;linkSave();LINK.quiet=Date.now()+3000;
+  await rpControl('pos='+Math.round(Math.max(REPLAY.start,Math.min(REPLAY.end,REPLAY.pos+d*1000))),true,true);
+}
+// video -> data (called from the tick)
+async function linkFollow(){
+  if(!LINK.on||LINK.busy||Date.now()<LINK.quiet)return;LINK.busy=true;
+  try{
+    if(LINK.approx&&!LINK.seeded){if(await vidState()){LINK.seeded=true;await linkPush()}else syncUi('Waiting for the video...');return}
+    const v=await vidState();
+    if(!v){syncUi('Waiting for the video...');return}
+    if(Date.now()>(LINK.msgUntil||0))syncUi('');
+    const target=(v.t-LINK.off)*1000+REPLAY.start;
+    if(v.p===REPLAY.playing){if(++LINK.mis<2)return;LINK.mis=0;await rpControl('playing='+(v.p?0:1),false,true);LINK.quiet=Date.now()+2000;return}
+    LINK.mis=0;
+    const limit=v.p?2000:2500;
+    if(REPLAY.speed<=2&&Math.abs(target-REPLAY.pos)>limit&&target>=REPLAY.start&&target<=REPLAY.end){
+      LINK.quiet=Date.now()+4500;await rpControl('pos='+Math.round(target),true,true);return}
+    if(Math.abs(v.r-Math.min(16,REPLAY.speed))>0.01)await vidSet({r:Math.min(16,REPLAY.speed)});
+  }finally{LINK.busy=false}
+}
+// The broadcast video starts the same distance before lights-out in every race (measured: 2025 Mexico City and Sao Paulo, 2024
+// British GP all have lights-out at ~506 s of video), while the recording's own start varies by ~20 s. So the video time of
+// lights-out is remembered per year and session type from your own syncs, and new races start from it (approximately).
+const LO_DEFAULT=506;
+function linkSession(key,m){
+  if(key===LINK.key)return;delete $('#rpLap').dataset.touched;LINK.key=key;LINK.meta=m;LINK.on=false;LINK.approx=false;LINK.seeded=true;
+  let saved=null;try{saved=localStorage.getItem(key)}catch{}
+  if(saved!=null&&isFinite(+saved)){LINK.off=+saved;LINK.on=true;LINK.quiet=Date.now()+4000;syncUi('Using the sync saved for this session');return}
+  let lo=null;try{lo=localStorage.getItem('pp_lo_'+m.year+'_'+m.session)}catch{}
+  const own=lo!=null&&isFinite(+lo);
+  if(own)lo=+lo;else if(/^race$/i.test(m.session)&&m.year>=2024)lo=LO_DEFAULT;else lo=null;
+  if(lo!=null&&REPLAY.started!=null){
+    LINK.off=lo-(REPLAY.started-REPLAY.start)/1000;LINK.on=true;LINK.approx=true;LINK.seeded=false;LINK.quiet=Date.now()+4000;
+    syncUi((own?'Started from your earlier '+m.year+' sync':'Started from the typical broadcast start')+': an estimate, usually within a few seconds, but a delayed start or a long pre-race show can put it minutes off. Compare the broadcast lap counter with the Lap number above the map; if they differ, type the lap the broadcast just flipped to and press Sync at lap.');
+  }else syncUi('When the broadcast lap counter flips to a new lap, type that lap and press Sync at lap');
+}
+// keeps the bar in step with the server clock
+async function rpTick(){
+  let s;try{s=await jget('/replay/status')}catch{return}
+  const on=!!(s.active&&s.ready);
+  Object.assign(REPLAY,{active:!!s.active,ready:!!s.ready,speed:s.speed||1,playing:s.playing!==false});
+  if(on&&!rpWasOn||!on&&rpWasOn){rpWasOn=on;LINK.key='';LINK.on=false;LINK.approx=false;LINK.seeded=true;   /* a new (or the same) replay starts a fresh sync, never the previous one's */
+    document.body.classList.toggle('replay',on);document.documentElement.style.setProperty('--rbh',on?$('#replayBar').offsetHeight+'px':'0px');relayout();if(!on){REPLAY_TV.meta=null;REPLAY_TV.url=null;REPLAY_TV.first=null;reloadData()}}
+  if(!on)return;
+  const m=s.meta||{};$('#rpTitle').textContent=`${m.year||''} ${m.meeting||''}  ${m.session||''}`;
+  $('#rpPlay').textContent=REPLAY.playing?'Pause':'Play';
+  if(!rpDrag){const i=RATES.indexOf(REPLAY.speed);if(i>=0)$('#rpSpeed').value=i;$('#rpSpeedTxt').textContent=REPLAY.speed+'x';
+    $('#rpScrub').value=Math.round((s.pos-s.start)/(s.end-s.start)*1000);$('#rpTime').textContent=hms(s.pos-s.start)+' / '+hms(s.end-s.start)}
+  REPLAY.start=s.start;REPLAY.end=s.end;REPLAY.pos=s.pos;REPLAY.started=s.started;
+  const rb=$('#replayBar').offsetHeight+'px';if(document.documentElement.style.getPropertyValue('--rbh')!==rb){document.documentElement.style.setProperty('--rbh',rb);relayout()}
+  if(curLap&&document.activeElement!==$('#rpLap')&&!$('#rpLap').dataset.touched)$('#rpLap').value=curLap;
+  if(DESKTOP){linkSession(`pp_sync_${m.year}_${m.meeting}_${m.session}`,m);if(!rpDrag)linkFollow()}
+}
+async function rpControl(q,reload,fromVideo){if(!fromVideo){userSeq++;if(LINK.on)LINK.quiet=Date.now()+12000}await jget('/replay/control?'+q);await rpTick();if(reload)await reseek();if(!fromVideo)await linkPush()}
+let hiddenWas=null;
+document.addEventListener('visibilitychange',async()=>{
+  if(!REPLAY.active||!REPLAY.ready)return;
+  if(document.hidden){
+    if(hiddenWas==null){hiddenWas=REPLAY.playing;if(hiddenWas){LINK.quiet=Date.now()+60000;try{await jget('/replay/control?playing=0')}catch{}}}
+  }else if(hiddenWas!=null){
+    const was=hiddenWas;hiddenWas=null;LINK.quiet=0;
+    await rpTick();await reseek();
+    if(was)await rpControl('playing=1',false);else await linkPush();
+  }
+});
+function rpWire(){
+  $('#replayBtn').onclick=openReplay;$('#rpCancel').onclick=()=>{if(rpBusy){rpCancelled=true;jget('/replay/stop').catch(()=>{})}$('#replayModal').classList.remove('show')};
+  $('#rpYear').onchange=rpYear;$('#rpTrack').onchange=rpTrack;$('#rpSess').onchange=()=>{$('#rpStart').disabled=$('#rpSess').value===''};$('#rpStart').onclick=rpStart;
+  $('#rpPlay').onclick=()=>rpControl('playing='+(REPLAY.playing?0:1),false);
+  // quick repeated clicks add up: each one builds on the previous target (for a few seconds) instead of on the last polled position
+  let skipTo=null,skipAt=0;
+  const jump=ms=>()=>{const base=skipTo!=null&&Date.now()-skipAt<4000?skipTo:REPLAY.pos;skipTo=Math.max(REPLAY.start,Math.min(REPLAY.end,base+ms));skipAt=Date.now();return rpControl('pos='+Math.round(skipTo),true)};
+  $('#rpB5').onclick=jump(-300000);$('#rpB1').onclick=jump(-60000);$('#rpF1').onclick=jump(60000);$('#rpF5').onclick=jump(300000);
+  const sp=$('#rpSpeed');sp.oninput=()=>{rpDrag=true;$('#rpSpeedTxt').textContent=RATES[+sp.value]+'x'};
+  sp.onchange=async()=>{await rpControl('speed='+RATES[+sp.value],true);rpDrag=false};
+  const sc=$('#rpScrub');sc.oninput=()=>{rpDrag=true;$('#rpTime').textContent=hms(sc.value/1000*(REPLAY.end-REPLAY.start))+' / '+hms(REPLAY.end-REPLAY.start)};
+  sc.onchange=async()=>{await rpControl('pos='+Math.round(REPLAY.start+sc.value/1000*(REPLAY.end-REPLAY.start)),true);rpDrag=false};
+  $('#rpSync').onclick=linkLock;$('#rpLights').onclick=linkLights;$('#rpLapBtn').onclick=linkLap;$('#rpFlipBtn').onclick=linkFlip;$('#rpVm').onclick=()=>linkNudge(-1);$('#rpVp').onclick=()=>linkNudge(1);$('#rpVm2').onclick=()=>linkNudge(-0.2);$('#rpVp2').onclick=()=>linkNudge(0.2);$('#rpVm10').onclick=()=>linkNudge(-10);$('#rpVp10').onclick=()=>linkNudge(10);$('#rpVm30').onclick=()=>linkNudge(-30);$('#rpVp30').onclick=()=>linkNudge(30);
+  $('#rpLap').oninput=()=>{$('#rpLap').dataset.touched='1'};
+  if(!DESKTOP){$('#rpSync').parentNode.hidden=true;$('#rpLights').hidden=true;document.querySelector('.lapsync').hidden=true}
+  $('#rpExit').onclick=async()=>{await jget('/replay/stop');await rpTick()};
+  setInterval(rpTick,800);rpTick();
+}
+(function ui(){
+  rpWire();
+  $('#loginBtn').onclick=()=>{$('#lgMsg').textContent='';$('#lgText').value='';$('#lgInfo').textContent=(CFG.token?'A login is saved. ':'')+(DESKTOP?'Easiest: sign in to F1 TV in the F1 TV box and it is picked up automatically (they expire now and then, just sign in again). Or paste it below.':'F1 only sends car positions, telemetry and its recorded sessions to subscribers. Paste your F1 TV login below.');$('#loginModal').classList.add('show')};
+  $('#lgCancel').onclick=()=>$('#loginModal').classList.remove('show');
+  $('#lgSave').onclick=async()=>{
+    const v=$('#lgText').value.trim();if(!v){$('#lgMsg').textContent='Paste the login first.';return}
+    $('#lgMsg').textContent='Saving...';
+    try{const r=await fetch('/f1token',{method:'POST',body:v});const j=await r.json();
+      if(!r.ok||!j.ok){$('#lgMsg').textContent=j.error||'Could not save it.';return}
+      CFG.token=true;$('#lgMsg').textContent='Saved.';setTimeout(()=>{$('#loginModal').classList.remove('show');reloadData()},700)
+    }catch(e){$('#lgMsg').textContent='Could not reach the server.'}
+  };
+  // the desktop app picks the login up from the F1 TV box: notice it and carry on without any copying
+  let badShown=false;
+  setInterval(async()=>{
+    const c=await fetch('/config').then(r=>r.json()).catch(()=>null);if(!c)return;
+    if(CFG.f1feed&&!CFG.token&&c.token){CFG.token=true;$('#loginModal').classList.remove('show');reloadData()}
+    if(c.tokenBad&&!badShown){badShown=true;$('#loginBtn').click();$('#lgMsg').textContent='Your saved F1 login has expired. Sign in again in the F1 TV box (it is picked up automatically) or paste a fresh one.'}
+    if(!c.tokenBad)badShown=false;
+  },4000);
+  setTimeout(()=>{if(CFG.f1feed&&!CFG.token&&!sessionStorage.getItem('pp_login_asked')){try{sessionStorage.setItem('pp_login_asked','1')}catch{}$('#loginBtn').click()}},2500);
+  const ts=$('#themeSel');let tv='dark';try{tv=localStorage.getItem('pp_theme')||'dark'}catch{}
+  ts.value=tv;if(window.desktopTheme)window.desktopTheme(tv);
+  ts.onchange=()=>{const v=ts.value;try{localStorage.setItem('pp_theme',v)}catch{}
+    if(v==='system')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=v;
+    if(window.desktopTheme)window.desktopTheme(v)};
+  $('#gapBtn').onclick=e=>{gapMode=gapMode==='int'?'gap':'int';e.target.textContent=gapMode==='int'?'Interval':'Gap to leader'};
+  $('#autoBtn').onclick=e=>{auto=!auto;e.target.classList.toggle('on',auto)};
+  $('#popBtn').onclick=()=>window.open('https://f1tv.formula1.com','f1tv','width=960,height=620');
+  // settings window
+  const saveSet=()=>{try{localStorage.setItem('pp_settings',JSON.stringify(SETTINGS))}catch{}};
+  const applySet=()=>{
+    if(window.desktopZoom)window.desktopZoom(SETTINGS.zoom==='auto'?'auto':+SETTINGS.zoom);
+    const lu=$('#layoutUi');
+    if(SETTINGS.compact){$('#sLayouts').style.display='flex';$('#sLayouts').append(lu)}
+    else{$('#sLayouts').style.display='none';document.querySelector('header').insertBefore(lu,$('#toggles'))}
+    $('#sZoom').value=String(SETTINGS.zoom);$('#sCompact').checked=!!SETTINGS.compact;$('#sRef').value=String(SETTINGS.ref||0);$('#sMute').checked=SETTINGS.muteExtra!==false;
+    setTimeout(()=>{const h=document.querySelector('header');document.documentElement.style.setProperty('--hh',h.offsetHeight+'px');relayout()},50);
+  };
+  if(!DESKTOP){$('#sZoomRow').hidden=true;$('#sTvRow').hidden=true}
+  $('#settingsBtn').onclick=()=>{applySet();$('#settingsModal').classList.add('show')};
+  $('#sClose').onclick=()=>$('#settingsModal').classList.remove('show');
+  $('#sZoom').onchange=e=>{SETTINGS.zoom=e.target.value;saveSet();applySet()};
+  $('#sCompact').onchange=e=>{SETTINGS.compact=e.target.checked;saveSet();applySet()};
+  $('#sRef').onchange=e=>{SETTINGS.ref=+e.target.value;saveSet()};
+  $('#sMute').onchange=e=>{SETTINGS.muteExtra=e.target.checked;saveSet()};
+  $('#sReset').onclick=()=>{SETTINGS=Object.assign({},SET_DEFAULT);saveSet();applySet()};
+  $('#waitX').onclick=()=>{waitHidden=$('#waitH').textContent+$('#waitP').textContent;$('#wait').classList.add('hide')};
+  const hdr=document.querySelector('header');
+  const setHH=()=>{document.documentElement.style.setProperty('--hh',hdr.offsetHeight+'px');relayout()};
+  new ResizeObserver(setHH).observe(hdr);window.addEventListener('resize',setHH);setHH();if(document.fonts)document.fonts.ready.then(setHH);setInterval(()=>{if(hdr.offsetHeight+'px'!==document.documentElement.style.getPropertyValue('--hh'))setHH()},1000);
+  initWorkspace();
+  applySet();
+  boot();
+})();
+</script>
+</body>
+</html>
