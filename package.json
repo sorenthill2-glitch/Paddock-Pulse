@@ -4,6 +4,14 @@
   "description": "Live F1 dashboard and session replayer for the desktop, with F1 TV video and data kept in sync",
   "main": "main.js",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sorenthill2-glitch/Paddock-Pulse.git"
+  },
+  "homepage": "https://github.com/sorenthill2-glitch/Paddock-Pulse#readme",
+  "bugs": {
+    "url": "https://github.com/sorenthill2-glitch/Paddock-Pulse/issues"
+  },
   "author": "Paddock Pulse",
   "scripts": {
     "start": "electron .",
