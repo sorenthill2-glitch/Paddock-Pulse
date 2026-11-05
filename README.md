@@ -19,7 +19,7 @@ session since 2018 can be replayed, with the F1 TV video and the data kept in sy
   tyres, race control, radio and weather.
 
 ## Install
-Run the installer from the releases page (`Paddock-Pulse-Setup-x.y.z.exe`). Windows may warn about an unknown publisher
+Download the installer (`Paddock-Pulse-Setup-x.y.z.exe`) from the [latest release](https://github.com/sorenthill2-glitch/Paddock-Pulse/releases/latest) and run it. Windows may warn about an unknown publisher
 because the installer is not code-signed. The first time it opens, sign in to F1 TV inside the F1 TV box: the app picks the
 login up by itself (details below).
 

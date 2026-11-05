@@ -12,8 +12,8 @@
   servers (and OpenF1 only if you configure it).
 
 ## Reporting a problem
-Please report security issues privately (a GitHub security advisory on this repository, or email the maintainer) rather than in a
-public issue. Include what you did and what you saw; never paste your real F1 token.
+Please report security issues privately rather than in a public issue: on the repository's **Security** tab, choose
+**Report a vulnerability**. Include what you did and what you saw; never paste your real F1 token.
 
 ## If you shared your token by accident
 Sign out of F1 TV in your browser and sign in again: that issues a new login and invalidates the old one.
